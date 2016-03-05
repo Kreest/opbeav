@@ -1,0 +1,14 @@
+<div id="content" flex layout="row" layout-align="center start">
+<div style="max-width: 500px; text-align: center;" class="foregroundText">
+  <a ng-repeat="p in self.auth" href="{{::p.url}}" target="_self" class="md-display-1" style="margin: 12px 0; display: block;">Log in with {{::p.id|capitalize}}</a>
+
+<p>
+Fine print:
+There will be more identity providers in the future. Feedback appreciated.
+Unfortunately I do not want to implement a complete login/password/session/email verification system myself.
+Published puzzles will link to the user page of the publisher.
+The requested account information will never be given to third parties for marketing purposes.
+It will be possible in the future to set a custom username.
+</p>
+</div>
+</div>

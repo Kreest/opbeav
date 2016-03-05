@@ -1,0 +1,85 @@
+<div id="content" flex style="background-color: transparent;">
+<div style="margin: 0 16px; max-width: 800px;" class="foregroundText">
+  <p>A simple FAQ for all of your needs!</p>
+
+  <h2 style="md-title">
+What is this website?
+  </h2>
+  <p>
+The Windmill is an interactive alternative to pen, graph paper, and a camera for creating and sharing puzzles using the puzzle language of the <s>2011</s> 2016 video game The Witness. Anyone can play and build puzzles and anyone can share puzzles with the world. I am not associated with Thekla Inc and this website uses no assets or code from the game.
+  </p>
+  <p>
+It was originally called The Witness Puzzle Simulator and it was just a static website. It is still running at
+<a href="http://thefifthmatt.com/witness/build.html">build.html</a>. It will auto-redirect here once this website
+proves stable enough, and once auto-generate is ported over in a basic way.
+  </p>
+
+  <h2 style="md-title">
+Is this website a video game?
+  </h2>
+  <p>
+It is a tool for The Witness community. If you want to learn the puzzle mechanics, I'd strongly encourage you to play The Witness. The way they interact with the game world is in service of ideas which are awe-inspiring and transcendent.
+  </p>
+
+  <h2 style="md-title">
+How does this website work?
+  </h2>
+  <p>
+It is an AngularJS app with persistent server state. When building puzzles, all puzzle state is encoded in the URL. This means that you can keep a tab open and checkpoint offline.
+  </p>
+  <p>
+Currently, anyone with a Google account login can publish puzzles. I am excited to see what you come up with!
+  </p>
+
+  <h2 style="md-title">
+What are known issues?
+  </h2>
+  <p>
+As far as missing/broken puzzle mechanics:
+first, yellow polyominos and blue polyominos cancel
+out based on count, not on whether they fit over each other.
+Second, blue/yellow configurations that require the yellow shapes
+to lie outside of the grid sometimes validate and sometimes don't.
+Third, Ys and stars/suns interact in ways incompatible with some game puzzles.
+Fourth, polyomino search is done differently when there is a Y, but cannot yet
+handle multiple Ys to cancel out multiple polyominos.
+This is roughly in order of heavy to light work required to fix.
+  </p>
+  <p>
+Outside of the puzzle logic I can guarantee there's more.
+See next section for how to report them!
+  </p>
+
+  <h2 style="md-title">
+Are you going to add any more features?
+  </h2>
+  <p>
+Yes! Send suggestions <a href="http://goo.gl/forms/Jvn3cBsxXa" target="_blank">here</a> or to &lt;windmill&gt; at
+&lt;this website without the subdomain&gt;. Use GitHub issue tracking once that is set up.
+  </p>
+  <p>
+Some feature requests which have been requested and will be implemented include:
+collections of puzzles to play in a row, "best" sorting for front page,
+better play (arrow keys, click to draw on mobile, adjust better to screen size),
+better editing (keyboard shortcuts, drag to add multiple of the same thing, easier grid size changes),
+generation of close-to-uniquely solvable puzzles.
+  </p>
+
+  <h2 style="md-title">
+Is making this website this your fulltime job?
+  </h2>
+  <p>
+No.
+  </p>
+
+  <h2 style="md-title">
+Where can I get the source?
+  </h2>
+  <p>
+On GitHub, as soon as I clean up the build system (it's Bash scripts with
+several different compilers involved), split up some massive files, and
+generally sanitize the whole thing.
+  </p>
+
+</div>
+</div>

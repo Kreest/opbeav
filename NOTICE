@@ -1,0 +1,26 @@
+## Original work
+Except where noted below, this work is:
+ * Copyright 2016 Matthew Gruen and windmill-client project contributors
+ * Licensed under Apache 2.0 license
+ * See https://github.com/thefifthmatt/windmill-client for more information
+
+## License and distribution
+
+The Apache 2.0 license is available in LICENSE and at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+## Included works
+static/protobuf.min.js is a modified version of protobuf.js version
+5.0.1, released under the included Apache 2.0 license.
+
+See https://github.com/dcodeIO/ProtoBuf.js for more information.
+
+static/basic.svg is a modified version of
+https://commons.wikimedia.org/wiki/File:Pink-eraser.svg, a public domain image

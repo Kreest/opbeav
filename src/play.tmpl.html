@@ -1,0 +1,69 @@
+<div id="all" flex layout="row" layout-align="center start" style="background-color: transparent; margin-bottom: 32px;">
+  <div id="content">
+    <div style="margin-top: 8px;" class="foregroundText">
+      <h2 class="md-display-1" style="margin: 0; margin-top: 8px; text-align: center;" ng-show="info.title" width="650">{{info.title}}</h2>
+      <ul style="margin: 0; text-align: center;" class="flatList">
+        <li>
+          <span ng-show="info.isPrivate">
+            <md-icon class="material-icon"
+                    style="color: white"
+                    ng-attr-title="Not linked from front page">lock</md-icon>
+          </span>
+          <span ng-show="!info.isPrivate&&mine">
+            <md-icon class="material-icon"
+                    style="color: white; cursor: pointer;"
+                    title="Linked from front page..."
+                    ng-click="lockDialog($event)">lock_open</md-icon>
+          </span>
+          by <a href="/user/{{info.creator}}">{{info.name}}</a>
+        <li ng-controller="RatingCtrl" ng-init="init(info)" style="padding-left: 8px;">
+          <md-icon class="material-icon"
+                   style="cursor: pointer;"
+                   ng-style="{'color': rinfo.voted==1?'yellow':'#EEE'}"
+                   ng-click="rate(1)">
+            thumb_up
+          </md-icon>
+          <span style="display: inline-block; min-width: 16px; text-align: center;">{{rinfo.localVotes + rinfo.voted}}</span>
+          <md-icon class="material-icon"
+                   style="cursor: pointer;"
+                   ng-style="{'color': rinfo.voted==-1?'#0087BD':'#EEE'}"
+                   ng-click="rate(-1)">
+            thumb_down
+          </md-icon>
+        </li>
+        <li>
+          {{info.localSolveText||info.solveText}}
+          <md-icon class="material-icon"
+                   ng-show="info.done"
+                   style="color: rgba(0,255,0,0.5); text-shadow: 0 0 5px rgba(0,0,0,0.2);">
+            done
+          </md-icon>
+      </ul>
+      <div ng-show="info.description" style="text-align: center;">{{info.description}}</div>
+    </div>
+    <div style="position: relative; margin-top: 0;">
+    <div id="gridContainer" width="650" height="650" style="position: relative; top: 0; left: 0;">
+      <svg id="grid" width="650" height="650" xmlns="http://www.w3.org/2000/svg" version="1.1" style="position: relative; top: 0; left: 0;">
+        <g transform="translate(50,50)">
+          <g id="gridBase" style="transform: translateZ(0)"></g>
+          <g id="gridPath"></g>
+        </g>
+      </svg>
+    </div>
+    <div id="extras" width="450" height="450" style="position: absolute; top: 50px; left: 50px"></div>
+    <div id="errors" width="450" height="450" style="position: absolute; top: 50px; left: 50px"></div>
+    <div id="pathExtras" width="450" height="450" style="position: absolute; top: 50px; left: 50px"></div>
+    </div>
+    <div ng-show="user&&autoplay" style="margin-top: 8px; text-align: center;" class="foregroundText">
+      <md-button class="md-raised" ng-show="!info.voted" ng-click="next(-1)">
+        Downvote this and {{info.done?'go to next':'skip'}}
+      </md-button>
+      <md-button class="md-raised" ng-click="next()">
+        {{info.done?'Go to next':'Skip to next'}}{{info.voted?'':" (don't vote)"}}
+      </md-button>
+      <md-button class="md-raised" ng-show="!info.voted" ng-click="next(1)">
+        Upvote and {{info.done?'go to next':'skip'}}
+      </md-button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<md-dialog aria-label="" ng-cloak>
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Publish this puzzle</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon md-svg-src="witness:error" aria-label="Close dialog" title="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content" layout="column">
+        <p>
+        Create a new puzzle link like <span style="color: #777">{{origin}}/m4rble</span>.<br>
+        Note: You need to <a href="/login">be logged in</a> to publish puzzles.
+        </p>
+        <md-input-container style="margin: 4px 0">
+          <label>Title (optional)</label>
+          <input ng-model="title">
+        </md-input-container>
+        <md-input-container style="margin: 4px 0">
+          <label>Description (optional)</label>
+          <input ng-model="desc">
+        </md-input-container>
+        <div id="recaptcha" style="margin-bottom: 24px"></div>
+        <md-checkbox
+          ng-model="allow"
+          ng-disabled="!solved"
+          aria-label="Allow on front page">
+          Allow on front page
+        </md-checkbox>
+        <span ng-hide="solved" style="color: red;">
+          You must solve the puzzle to add it to the front page.<br>
+          (But you can still publish it to your user page.)
+        </span>
+      </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="save()">
+       Publish
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

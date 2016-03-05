@@ -1,0 +1,703 @@
+{namespace windmill.templates autoescape="strict"}
+
+/** Grid SVG. */
+{template .gridSvg}
+  {@param contents: list<?>}
+// First, base grid.
+<g stroke="black" fill="black">
+  {foreach $entity in $contents}
+    {call .entityGridSvg data="$entity" /}
+  {/foreach}
+</g>
+// Now, extras.
+<g stroke="black" fill="black">
+  {foreach $entity in $contents}
+    {call .entityExtraSvg data="$entity" /}
+  {/foreach}
+</g>
+{/template}
+
+/** Color SVG */
+{template .colorSvg}
+  {@param? color: number}
+{if isNonnull($color)}
+  {switch $color}
+    {case Color.BLACK}
+      black
+    {case Color.WHITE}
+      white
+    {case Color.CYAN}
+      cyan
+    {case Color.MAGENTA}
+      magenta
+    {case Color.YELLOW}
+      yellow
+    {case Color.RED}
+      red
+    {case Color.GREEN}
+      green
+    {case Color.BLUE}
+      blue
+  {/switch}
+{else}
+  gray
+{/if}
+{/template}
+
+/** Entity SVG */
+{template .entityExtraSvg}
+  {@param i: int}
+  {@param j: int}
+  {@param drawType: int}
+  {@param type: int}
+  {@param extras: ?}
+{let $coord: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j, 'i': $i, 'j': $j] /}
+{switch $drawType}
+  {case DrawType.CELL}
+    {switch $type}
+      {case Type.BASIC}
+      {case Type.SQUARE}
+        {call .squareSvg data="$coord"}
+          {param color: $extras.color /}
+        {/call}
+      {case Type.STAR}
+        {call .starSvg data="$coord"}
+          {param color: $extras.color /}
+        {/call}
+      {case Type.TETRIS}
+        {call .tetrisSvg data="$coord"}
+          {param shape: $extras.shape /}
+        {/call}
+      {case Type.ERROR}
+        {call .errorSvg data="$coord" /}
+      {case Type.TRIANGLE}
+        {call .triangleSvg data="$coord"}
+          {param count: $extras.count /}
+        {/call}
+      {default}
+        <!-- whoops -->
+    {/switch}
+  {case DrawType.POINT}
+    {switch $type}
+      {case Type.BASIC}
+      {case Type.START}
+        {call .startSvg data="$coord" /}
+      {case Type.END}
+        {call .endSvg data="$coord"}
+          {param horizontal: $extras.horizontal /}
+          {param vertical: $extras.vertical /}
+        {/call}
+      {case Type.HEXAGON}
+        {call .hexagonSvg data="$coord" /}
+      {default}
+        <!-- whoops -->
+    {/switch}
+  {case DrawType.HLINE, DrawType.VLINE}
+    {switch $type}
+      {case Type.HEXAGON}
+        {call .hexagonSvg data="$coord"}
+          {param direction: $drawType /}
+        {/call}
+    {/switch}
+{/switch}
+{/template}
+
+/** Entity SVG */
+{template .entityGridSvg}
+  {@param i: int}
+  {@param j: int}
+  {@param drawType: int}
+  {@param type: int}
+{let $coord: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j] /}
+{switch $drawType}
+  {case DrawType.HLINE, DrawType.VLINE}
+    // Also have to do disjoint here.
+    {if $type != Type.NONE}
+      {call .gridLineSvg data="$coord"}
+        {param direction: $drawType /}
+        {param disjoint: $type == Type.DISJOINT /}
+      {/call}
+    {/if}
+{/switch}
+{/template}
+
+/** End SVG */
+{template .endSvg}
+  {@param x: number}
+  {@param y: number}
+  {@param horizontal: number}
+  {@param vertical: number}
+{let $dx: $horizontal == 0 ? 0 : ($horizontal > 0 ? UI.END_LENGTH : -UI.END_LENGTH) /}
+{let $dy: $vertical == 0 ? 0 : ($vertical > 0 ? UI.END_LENGTH : -UI.END_LENGTH) /}
+<line x1="{$x}"
+      y1="{$y}"
+      x2="{$x+$dx}"
+      y2="{$y+$dy}"
+      stroke-width="{UI.GRID_LINE}"
+      stroke-linecap="round" />
+{/template}
+
+/** Error SVG */
+{template .errorSvg}
+{call .cellSvg data="all"}
+  {param content kind="html"}
+    <rect width="15px" height="8px" transform="rotate(-90 0 4)" />
+    <rect width="15px" height="8px" transform="rotate(30 0 4)" />
+    <rect width="15px" height="8px" transform="rotate(150 0 4)" />
+  {/param}
+  //{param width: 30 /}
+  //{param height: 30 /}
+  {param attributes kind="attributes"}fill="white" stroke="white"{/param}
+{/call}
+{/template}
+
+/** Triangle SVG */
+{template .triangleSvg}
+  {@param count: int}
+{let $r: 8 /}
+{let $addl: $r*2 + 4 /}
+{let $h: $r*1.73205/2 /}
+{let $xTransform: ($count-1)*$addl /}
+{call .cellSvg data="all"}
+  {param content kind="html"}
+    {for $i in range($count)}
+      <polygon fill="orange" stroke="none"
+              points="{0},{-$h} {$r},{$h} {-$r},{$h}"
+              transform="translate({$i*$addl-$xTransform/2},0)" />
+    {/for}
+  {/param}
+  {param attributes kind="attributes"}fill="white" stroke="white"{/param}
+{/call}
+{/template}
+
+/** Star SVG */
+{template .starSvg}
+{let $color kind="text"}{call .colorSvg data="all"/}{/let}
+{call .cellSvg data="all"}
+  {param content kind="html"}
+    <rect width="30px" height="30px" />
+    <rect width="30px" height="30px" transform="rotate(45 15 15)" />
+  {/param}
+  {param width: 30 /}
+  {param height: 30 /}
+  {param attributes kind="attributes"}fill="{$color}" stroke="{$color}"{/param}
+{/call}
+{/template}
+
+/** Hexagon SVG */
+{template .hexagonSvg}
+  {@param x: number}
+  {@param y: number}
+  {@param? direction: int}
+// Via http://blog.ruslans.com/2011/02/hexagonal-grid-math.html. Magic number is sqrt(3).
+// Radius, slant width, and half height.
+{let $r: 8 /}
+{let $s: $r/2 /}
+{let $h: $r*1.73205/2 /}
+{let $fullWidth: $r*2 /}
+{let $fullHeight: $h*2 /}
+// Starting from left and going counterclockwise.
+<polygon fill="gray" stroke="gray"
+         points="{-$r},0 {-$s},{-$h} {$s},{-$h} {$r},0 {$s},{$h} {-$s},{$h}"
+         transform="translate(
+            {$x+($direction == DrawType.HLINE ? 50 : 0)},
+            {$y+($direction == DrawType.VLINE ? 50 : 0)})" />
+{/template}
+
+/** Tetris SVG */
+{template .tetrisSvg}
+  {@param shape: [width: int, height: int, rows: list<list<bool>>, free: bool, negative: bool]}
+{let $width: UI.TETRIS*$shape.width + UI.TETRIS_SPACE*($shape.width-1) /}
+{let $height: UI.TETRIS*$shape.height + UI.TETRIS_SPACE*($shape.height-1) /}
+{let $allowedSpace: UI.TETRIS*3.5 * ($shape.free ? 0.7071 : 1) /}
+{let $maxDimension: $width > $height ? $width : $height /}
+{let $scaleFactor:
+    ($maxDimension <= $allowedSpace ? 1 : $allowedSpace/$maxDimension) /}
+{let $neg: $shape.negative ? 2 : 0 /}
+{let $pos: not $shape.negative ? 2 : 0 /}
+{call .cellSvg data="all"}
+  {param content kind="html"}
+    <g transform="
+      {if $shape.free}
+        rotate(-15, {$width*$scaleFactor/2}, {$height*$scaleFactor/2})
+        scale({$scaleFactor})
+      {else}
+        scale({$scaleFactor})
+      {/if}
+    ">
+    {foreach $row in $shape.rows}
+      {foreach $col in $row}
+        {if $col}
+          <rect width="{UI.TETRIS-2*$neg}px" height="{UI.TETRIS-2*$neg}px"
+                rx="{$pos}" ry="{$pos}"
+                x="{(UI.TETRIS+UI.TETRIS_SPACE)*index($col)+$neg}"
+                y="{(UI.TETRIS+UI.TETRIS_SPACE)*index($row)+$neg}" />
+        {/if}
+      {/foreach}
+    {/foreach}
+    </g>
+  {/param}
+  {param width: $width*$scaleFactor /}
+  {param height: $height*$scaleFactor /}
+  // It's complicated enough that we'd prefer to build it at origin, then transform.
+  {param attributes kind="attributes"}
+    {if $shape.negative}
+      fill="none" stroke="blue"
+      stroke-width="4"
+    {else}
+      fill="yellow" stroke="none"
+    {/if}
+  {/param}
+{/call}
+{/template}
+
+/** Square SVG */
+{template .iconWrapper}
+  {@param content: html}
+<svg viewbox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <g transform="scale(0.64)">
+    {$content}
+  </g>
+  //<rect width="95px" height="95px" rx="15px" ry="15px"
+  //      fill="none" stroke="black" stroke-width="10px" />
+</svg>
+{/template}
+
+
+/** Logo SVG. Copy-pasted from icon SVG. */
+{template .logo}
+{let $coords: ['x': 0, 'y': 0] /}
+{let $zoom15 kind="text"}scale(1.5) translate(-16.66, -16.66){/let}
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32 32">
+<g id="tetris" transform="scale(0.32, 0.32) {$zoom15}">
+  {call .tetrisSvg data="$coords"}
+    {param shape: [
+      'rows': [[true, true], [true, true]],
+      'width': 2,
+      'height': 2,
+      'free': false,
+      'negative': false
+    ] /}
+  {/call}
+</g>
+</svg>
+{/template}
+
+/** Icon sheet SVG */
+{template .icons}
+{let $coords: ['x': 0, 'y': 0] /}
+{let $zoom1 kind="text"}none{/let}
+{let $zoom15 kind="text"}scale(1.5) translate(-16.66, -16.66){/let}
+{let $zoom2 kind="text"}scale(2) translate(-25, -25){/let}
+//{let $coords: ['x': 10, 'y': 10] /}{let $scale: 0.8 /}
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1"><defs>
+{foreach $color in [Color.BLACK, Color.WHITE, Color.CYAN, Color.MAGENTA, Color.YELLOW,
+                    Color.RED, Color.GREEN, Color.BLUE]}
+  <g id="square{$color}">
+    <g transform="{$zoom15}">
+    {call .squareSvg data="$coords"}
+      {param color: $color /}
+    {/call}
+    </g>
+  </g>
+  <g id="star{$color}">
+    <g transform="{$zoom15}">
+    {call .starSvg data="$coords"}
+      {param color: $color /}
+    {/call}
+    </g>
+  </g>
+{/foreach}
+<g id="tetris" transform="{$zoom15}">
+  {call .tetrisSvg data="$coords"}
+    {param shape: [
+      'rows': [[true, true], [true, true]],
+      'width': 2,
+      'height': 2,
+      'free': false,
+      'negative': false
+    ] /}
+  {/call}
+</g>
+<g id="negative" transform="{$zoom15}">
+  {call .tetrisSvg data="$coords"}
+    {param shape: [
+      'rows': [[true, true], [true, true]],
+      'width': 2,
+      'height': 2,
+      'free': false,
+      'negative': true
+    ] /}
+  {/call}
+</g>
+<g id="error" transform="{$zoom15}">
+  {call .errorSvg data="$coords" /}
+</g>
+{for $count in range(3)}
+  <g id="triangle{$count}" transform="{$zoom15}">
+    {call .triangleSvg data="$coords"}
+      {param count: $count + 1 /}
+    {/call}
+  </g>
+{/for}
+<g id="start" transform="translate(50, 50) scale(1.5)" stroke="black" fill="black">
+  {call .startSvg data="$coords" /}
+</g>
+<g id="end" transform="translate(40, 50) scale(1.5)" stroke="black">
+  <line x1="0"
+        y1="0"
+        x2="{UI.END_LENGTH}"
+        y2="0"
+        stroke-width="{UI.GRID_LINE}"
+        stroke-linecap="round" />
+  <line x1="0"
+        y1="0"
+        x2="{UI.END_LENGTH/2}"
+        y2="0"
+        stroke-width="{UI.GRID_LINE}"
+        stroke-linecap="square" />
+</g>
+<g id="disjoint" transform="translate(-25, 50) scale(1.5)" stroke="black">
+  {call .gridLineSvg data="$coords"}
+    {param direction: DrawType.HLINE /}
+    {param disjoint: true /}
+  {/call}
+</g>
+<g id="hexagon" transform="translate(-25, 50) scale(1.5)" stroke="black">
+  {call .gridLineSvg data="$coords"}
+    {param direction: DrawType.HLINE /}
+  {/call}
+  <g transform="translate(50, 0)">
+    {call .hexagonSvg data="$coords" /}
+  </g>
+</g>
+</defs></svg>
+{/template}
+
+
+/** Square SVG */
+{template .squareSvg}
+{let $color kind="text"}{call .colorSvg data="all"/}{/let}
+{call .cellSvg data="all"}
+  {param content kind="html"}
+    <rect width="40px" height="40px" rx="15px" ry="15px" />
+  {/param}
+  {param width: 40 /}
+  {param height: 40 /}
+  {param attributes kind="attributes"}fill="{$color}" stroke="{$color}"{/param}
+{/call}
+{/template}
+
+/** Cell SVG */
+{template .cellSvg}
+  {@param x: int}
+  {@param y: int}
+  {@param content: html}
+  {@param? attributes: attributes}
+  {@param? width: int}
+  {@param? height: int}
+<g transform="translate({$x+UI.GRID_UNIT/2-($width ? $width : 0)/2},
+                        {$y+UI.GRID_UNIT/2-($height ? $height : 0)/2})"
+   {if $attributes}{sp}{$attributes}{/if}>
+  {$content}
+</g>
+{/template}
+
+/** Grid SVG */
+{template .gridLineSvg}
+  {@param x: number}
+  {@param y: number}
+  {@param direction: number}
+  {@param? start: number}
+  {@param? end: number}
+  {@param? disjoint: bool}
+{let $horizontal: $direction == DrawType.HLINE ? 1 : 0 /}
+{let $vertical: 1 - $horizontal /}
+{let $soff: $start ? $start : 0 /}
+{let $eoff: $end ? $end : 0 /}
+{let $partial: $start or $end ? 1 : 0 /}
+<line x1="{$x+$horizontal*$partial*$soff}"
+      y1="{$y+$vertical*$partial*$soff}"
+      x2="{$x+$horizontal*(UI.GRID_UNIT-$partial*$eoff)}"
+      y2="{$y+$vertical*(UI.GRID_UNIT-$partial*$eoff)}"
+      stroke-width="{UI.GRID_LINE}"
+      {if $disjoint}stroke-dasharray="{UI.DISJOINT_LENGTH},{UI.GRID_UNIT-UI.DISJOINT_LENGTH*2},{UI.DISJOINT_LENGTH}"{/if}
+      stroke-linecap="round" />
+// Strokes with multiple endcaps? Impossible!
+{if $disjoint}
+{let $r: UI.GRID_LINE/2 /}
+<g stroke="none">
+<rect width="{2*$r}" height="{2*$r}"
+      x="{$x+$horizontal*UI.DISJOINT_LENGTH-$r}"
+      y="{$y+$vertical*UI.DISJOINT_LENGTH-$r}" />
+<rect width="{2*$r}" height="{2*$r}"
+      x="{$x+$horizontal*(UI.GRID_UNIT-UI.DISJOINT_LENGTH)-$r}"
+      y="{$y+$vertical*(UI.GRID_UNIT-UI.DISJOINT_LENGTH)-$r}" />
+</g>
+{/if}
+{/template}
+
+
+/** Start SVG */
+{template .startSvg}
+  {@param x: number}
+  {@param y: number}
+<circle cx="{$x}" cy="{$y}" r="{UI.START_R}" />
+{/template}
+
+/** Snake wrapper SVG */
+{template .snakeWrapperSvg}
+  {@param snakeId: int}
+<g id="path{$snakeId}"></g>
+{/template}
+
+/** Snake SVG */
+{template .snakeSvg}
+  {@param contents: list<?>}
+<g stroke="white" fill="white">
+  {foreach $segment in $contents}
+    {call .snakeSegmentSvg data="$segment"}
+      {param isLastSegment: isLast($segment) /}
+    {/call}
+  {/foreach}
+</g>
+{/template}
+
+/** Snake SVG */
+{template .snakeSegmentSvg}
+  {@param i: number}
+  {@param j: number}
+  {@param isLastSegment: bool}
+  {@param segmentType: number}
+  {@param? direction: number}
+  {@param? start: number}
+  {@param? end: number}
+{let $coord: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j] /}
+{if $segmentType == SegmentType.START}
+  {call .startSvg data="$coord" /}
+{elseif $segmentType == SegmentType.MIDDLE and isNonnull($direction)}
+  {call .gridLineSvg data="$coord"}
+    {param direction: $direction /}
+    {param isLastSegment: $isLastSegment /}
+  {/call}
+{elseif $segmentType == SegmentType.END and isNonnull($start) and isNonnull($end) and isNonnull($direction)}
+  {call .gridLineSvg data="$coord"}
+    {param direction: $direction /}
+    {param isLastSegment: $isLastSegment /}
+    {param start: $start /}
+    {param end: $end /}
+  {/call}
+{/if}
+{/template}
+
+
+
+
+/** Grid extras */
+{template .gridHtml}
+  {@param contents: list<?>}
+  {@param? editEntity: ?}
+{foreach $entity in $contents}
+  {call .entityPlayHtml data="$entity" /}
+{/foreach}
+{if $editEntity}
+  {foreach $entity in $contents}
+    {call .entityEditHtml data="$entity"}
+      {param editEntity: $editEntity /}
+    {/call}
+  {/foreach}
+{/if}
+{/template}
+
+/** Entity extras */
+{template .entityPlayHtml}
+  {@param i: number}
+  {@param j: number}
+  {@param drawType: number}
+  {@param type: number}
+{let $entity: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j, 'i': $i, 'j': $j, 'drawType': $drawType] /}
+{if $drawType == DrawType.POINT and $type == Type.START}
+  {call .startHtml data="$entity" /}
+{/if}
+{/template}
+
+/** Entity extras */
+{template .entityEditHtml}
+  {@param i: number}
+  {@param j: number}
+  {@param drawType: number}
+  {@param type: int}
+  {@param extras: ?}
+  {@param editEntity: ?}
+  //{@param type: number}
+{let $entity: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j, 'i': $i, 'j': $j, 'drawType': $drawType, 'highlight': true, 'removeAlways': $editEntity.type == Type.BASIC] /}
+{let $remove: $type == $editEntity.type /}
+// Holy switch
+{switch $drawType}
+  {case DrawType.POINT}
+    {switch $editEntity.type}
+      {case Type.BASIC, Type.START, Type.HEXAGON, Type.NONE, Type.END}
+        {if $editEntity.type != Type.END or $extras.endable}
+          {call .overlayPointHtml data="$entity"}
+            // Make it easy to start playing.
+            {param small: $type == Type.START /}
+            {param remove: $remove /}
+          {/call}
+        {/if}
+      {default}
+    {/switch}
+  {case DrawType.CELL}
+    {switch $editEntity.type}
+      {case Type.SQUARE, Type.STAR}
+        {call .overlayCellHtml data="$entity"}
+          {param remove: $remove and $editEntity.extras.color == $extras.color /}
+        {/call}
+      {case Type.TETRIS}
+        {call .overlayCellHtml data="$entity"}
+          {param remove: $remove and $editEntity.extras.shape
+              and $editEntity.extras.shape.negative == $extras.shape.negative
+              and $editEntity.extras.shape.free == $extras.shape.free
+              and $editEntity.extras.shape.repr == $extras.shape.repr /}
+        {/call}
+      {case Type.TRIANGLE}
+        {call .overlayCellHtml data="$entity"}
+          {param remove: $remove and $editEntity.extras.count == $extras.count /}
+        {/call}
+      {case Type.BASIC, Type.ERROR}
+        {call .overlayCellHtml data="$entity"}
+          {param remove: $remove /}
+        {/call}
+    {/switch}
+  {case DrawType.VLINE, DrawType.HLINE}
+    {switch $editEntity.type}
+      {case Type.NONE, Type.BASIC, Type.DISJOINT, Type.HEXAGON}
+        {call .overlayLineHtml data="$entity"}
+          {param remove: $remove /}
+        {/call}
+    {/switch}
+{/switch}
+{/template}
+
+
+/** Entity extras */
+{template .errorHtml}
+  {@param i: number}
+  {@param j: number}
+  {@param drawType: int}
+// Possible abuse of this notation.
+{let $entity: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j, 'i': $i, 'j': $j, 'drawType': $drawType, 'error': true] /}
+{switch $drawType}
+  {case DrawType.POINT}
+    {call .overlayPointHtml data="$entity"}
+      {param small: true /}
+    {/call}
+  {case DrawType.CELL}
+    {call .overlayCellHtml data="$entity" /}
+  {case DrawType.VLINE, DrawType.HLINE}
+    {call .overlayLineHtml data="$entity" /}
+{/switch}
+{/template}
+
+
+/** Overlay for points HTML */
+{template .overlayPointHtml}
+  {@param x: int}
+  {@param y: int}
+  {@param? small: bool}
+{let $r: $small ? UI.GRID_LINE/2 : UI.EDIT_R /}
+{call .overlayHtml data="all"}
+  {param attributes kind="attributes"}
+    //style="left: {$x-UI.GRID_LINE/2}px; top: {$y-UI.GRID_LINE/2}px; width: {UI.GRID_LINE}px; height: {UI.GRID_LINE}px;"
+    style="left: {$x-$r}px; top: {$y-$r}px;
+           width: {$r*2}px; height: {$r*2}px;
+           z-index: 2;"
+  {/param}
+{/call}
+{/template}
+
+/** Overlay for points HTML */
+{template .overlayLineHtml}
+  {@param x: int}
+  {@param y: int}
+  {@param drawType: int}
+{let $horizontal: $drawType == DrawType.HLINE /}
+{let $vertical: not $horizontal /}
+{let $longStart: UI.GRID_LINE/2 /}
+{let $shortStart: -UI.EDIT_R /}
+{let $longLength: UI.GRID_UNIT - UI.GRID_LINE /}
+{let $shortLength: UI.EDIT_R+UI.GRID_LINE /}
+{call .overlayHtml data="all"}
+  {param attributes kind="attributes"}
+    style="left: {$x+($horizontal ? $longStart : $shortStart)}px;
+           top: {$y+($vertical ? $longStart : $shortStart)}px;
+           width: {$horizontal ? $longLength : $shortLength}px;
+           height: {$vertical ? $longLength : $shortLength}px;
+           z-index: 2;"
+  {/param}
+{/call}
+{/template}
+
+/** Overlay for points HTML */
+{template .overlayCellHtml}
+  {@param x: int}
+  {@param y: int}
+{call .overlayHtml data="all"}
+  {param attributes kind="attributes"}
+    style="left: {$x+UI.GRID_LINE/2}px; top: {$y+UI.GRID_LINE/2}px;
+           width: {UI.GRID_UNIT-UI.GRID_LINE}px; height: {UI.GRID_UNIT-UI.GRID_LINE}px;
+           z-index: 1;"
+  {/param}
+{/call}
+{/template}
+
+/** Template for all HTML overlaying grid elements. */
+{template .overlayHtml}
+  // Should be passed in by parent.
+  {@param i: int}
+  {@param j: int}
+  {@param drawType: int}
+  // Custom stuff. Kitchen sinks.
+  {@param? content: html}
+  {@param? attributes: attributes}
+  {@param? highlight: bool}
+  {@param? error: bool}
+  {@param? alwaysRemove: bool}
+  {@param? remove: bool}
+<div class="
+     {if $error}
+        error
+     {else}
+        overlay
+        {if $highlight}{sp}canHighlight{/if}
+        {if $alwaysRemove or $remove}{sp}isRemoval{/if}
+     {/if}"
+     {if $attributes}{$attributes}{/if}
+     data-c="{$drawType},{$i},{$j}"
+     data-op="{$highlight ? ($remove or $alwaysRemove ? 2 : 1) : 0}">
+{if $content}{$content}{/if}
+</div>
+{/template}
+
+
+/** A touch indicator. */
+{template .touchIndicator}
+  {@param x: int}
+  {@param y: int}
+{let $position kind="attributes"}style="top: {round($y-50)}px; left: {round($x-50)}px; z-index: 20;"{/let}
+<div class="touchIndicator isSecond"{sp}{$position}></div>
+<div class="touchIndicator"{sp}{$position}></div>
+{/template}
+
+
+/** Start HTML */
+{template .startHtml}
+  {@param x: int}
+  {@param y: int}
+{call .overlayHtml data="all"}
+  {param attributes kind="attributes"}
+    style="left: {$x-UI.START_R}px; top: {$y-UI.START_R}px; width: 0; height: 0;
+           border-radius: {UI.START_R}px; border: {UI.START_R}px solid transparent;"
+  {/param}
+{/call}
+{/template}
+

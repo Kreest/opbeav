@@ -1,0 +1,14 @@
+static/*
+!static/basic.svg
+!static/icons.svg
+!static/logo.ico
+!static/protobuf.min.js
+dist/*
+!dist/README.md
+node_modules/
+tmp/
+build.html
+# TODO: Ixnay
+_props_map.out
+_vars_map.out
+

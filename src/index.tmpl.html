@@ -1,0 +1,52 @@
+<md-content style="background-color: transparent; margin-bottom: 32px;">
+<div ng-if="!user" class="foregroundText">
+  <md-input-container style="min-width: 100px; margin: 4px;">
+    <md-select ng-model="model.sortBy" aria-label="Sort by">
+      <md-option ng-repeat="sort in sorts" ng-value="sort">{{sortTexts[sort]}}</md-option>
+    </md-select>
+  </md-input-container>
+</div>
+<div class="gridSquare" ng-if="!user">
+  <a href="/build" class="fill">
+    <md-icon class="material-icons gridView">add</md-icon>
+  </a>
+</div>
+<div ng-repeat="grid in grids" class="gridSquare renderCloak" data-id="{{::grid.id}}" ng-class="{'isPrivate': grid.isPrivate}">
+  <a href="/{{::grid.id}}" class="fill">
+    <md-icon class="material-icons gridView">grid_on</md-icon>
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" version="1.1">
+      <g transform="translate(50, 50)"></g>
+    </svg>
+  </a>
+  <div class="material-icons gridDone" ng-show="grid.done">
+    <div class="gridDoneText">done</div>
+  </div>
+  <div class="gridMenu isTop foregroundText" ng-style="{'display': grid.title?null:'none'}">{{grid.title}}</div>
+  <div class="gridMenu isBottom foregroundText">
+    <div class="bottomText">
+      <ul class="flatList">
+        <li>by <a href="/user/{{grid.creator}}">{{grid.name}}</a>
+        <li ng-controller="RatingCtrl" ng-init="init(grid)" ng-if="!user">
+          <md-icon class="material-icon"
+                   ng-style="{'color': rinfo.voted==1?'yellow':'#AAA'}"
+                   ng-click="rate(1)">
+            thumb_up
+          </md-icon>
+          <span style="display: inline-block; min-width: 16px; text-align: center;">{{rinfo.localVotes + rinfo.voted}}</span>
+          <md-icon class="material-icon"
+                   ng-style="{'color': rinfo.voted==-1?'#0087BD':'#AAA'}"
+                   ng-click="rate(-1)">
+            thumb_down
+          </md-icon>
+        </li>
+        <li>{{grid.solveText}}
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="gridSquare" style="border: none;" ng-show="more">
+  <!-- smaller -->
+  <a ng-click="loadMore()" class="fill">
+    <md-icon class="material-icons gridView">more_horiz</md-icon>
+  </a>
+</md-content>

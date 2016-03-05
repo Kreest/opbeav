@@ -1,0 +1,46 @@
+<md-dialog aria-label="" ng-cloak>
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>
+          <md-icon class="material-icon">lock_open</md-icon>
+          →
+          <md-icon class="material-icon">lock</md-icon>
+        </h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon md-svg-src="witness:error" aria-label="Close dialog" title="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content" layout="column">
+        <p>
+          Remove this puzzle from the front page.
+        </p>
+        <p>
+          If removed, the puzzle may still appear on your user page, and anyone with the link
+          can still access it and solve it.
+        </p>
+        <p style="color: red;">
+          This action cannot be undone. Once removed, it cannot be added to the front page
+          again except by re-publishing it.
+        </p>
+        <md-checkbox
+          ng-model="ok"
+          aria-label="Sounds good to me">
+          Sounds good to me
+        </md-checkbox>
+      </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="cancel()">
+        Get me out of here
+      </md-button>
+      <md-button ng-click="lock()" ng-disabled="!ok">
+        Good riddance
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

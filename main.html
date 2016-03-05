@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>The Windmill</title>
+<meta charset="UTF-8" />
+
+<script src="static/bytebuffer.min.js"></script>
+<script src="static/protobuf.min.js"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=explicit"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.18/angular-ui-router.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet" type="text/css">
+<link href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css" rel="stylesheet">
+<!--
+For ease of offline development, can also use our own static files.
+<script src="static/angular.min.js"></script>
+<script src="static/angular-animate.min.js"></script>
+<script src="static/angular-aria.min.js"></script>
+<script src="static/angular-messages.min.js"></script>
+<script src="static/angular-material.min.js"></script>
+<script src="static/angular-ui-router.min.js"></script>
+<link href="static/roboto.css" rel="stylesheet" type="text/css">
+<link href="static/material_icons.css" rel="stylesheet" type="text/css">
+<link href="static/angular-material.min.css" rel="stylesheet">
+-->
+
+<script src="dist/runlocal.js"></script>
+
+<style type="text/css">
+.overlay {
+  position: absolute;
+  cursor: pointer;
+  background-color: yellow;
+  opacity: 0;
+}
+.overlay.isRemoval {
+  background-color: red;
+}
+.overlay.canHighlight:hover {
+  opacity: 0.2;
+}
+.overlay.isSelected:hover {
+  opacity: 0.4;
+}
+.error {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.5;
+  background-color: red;
+}
+.md-button.md-icon-button.element {
+  width: 48px;
+  height: 48px;
+  line-height: inherit;
+  /*@include md-shadow-bottom-z-1();*/
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
+  margin: 6px;
+}
+/** Specificify hacks */
+.md-icon-button.element[disabled] {
+  background-color: gray;
+  opacity: 0.4;
+}
+.md-icon-button.element.isSelected {
+  background-color: rgb(255,64,129);
+}
+.md-icon-button.element.isSelected:hover {
+  background-color: rgb(255,64,129);
+}
+.md-icon-button.element md-icon {
+  width: 32px;
+  height: 32px;
+}
+.gridSquare {
+  margin: 4px;
+  display: inline-block;
+  vertical-align: top;
+  width: 200px;
+  height: 200px;
+  text-align: center;
+  border: 3px solid black;
+  position: relative; /* for overlays */
+  overflow: hidden; /* for menu animations */
+}
+.gridMenu {
+  display: block;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 3;
+  background-color: rgba(25, 25, 50, 0.5);
+  transition: transform 100ms ease-in;
+
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.gridMenu.isTop {
+  top: 0;
+  height: 30%;
+  pointer-events: none;
+  transform: translate(0, -100%);
+  font-size: 24px;
+}
+.gridMenu.isBottom {
+  top: 70%;
+  height: 30%;
+  transform: translate(0, 100%);
+  cursor: default;
+}
+.gridMenu a, .gridMenu md-icon {
+  cursor: pointer;
+}
+ul.flatList {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+ul.flatList > li {
+  display: inline-block;
+  margin-left: 8px;
+}
+ul.flatList > li+li {
+  margin-right: 8px;
+}
+.gridMenu.isBottom > .bottomText {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+}
+.gridSquare:hover .gridMenu {
+  transform: none;
+}
+.gridDone {
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+
+  abackground-color: rgba(0, 0, 0, 0.15);
+  /*border: 3px solid rgba(0,0,0,0.4);
+  box-shadow: 0px 0px 5px 2px goldenrod;*/
+  z-index: 2;
+  pointer-events: none;
+}
+.gridDoneText {
+  font-size: 100px;
+  line-height: 200px;
+  text-align: center;
+  transition-property: color, text-shadow, transform;
+  transition-duration: 100ms;
+  transition-timing-function: ease-in;
+  /* for corner: translate(-75px, 0) scale(0.5) */
+  transform: scale(2.0);
+  color: transparent;
+  text-shadow: 0 5px 0 rgba(0, 50, 0, 0.2);
+}
+.gridSquare:hover .gridDoneText {
+  color: rgba(0,255,0,0.5);
+  text-shadow: 0 0 5px rgba(0,0,0,0.8);
+  transform: none;
+}
+.gridSquare.isPrivate {
+  border: 3px solid #F66;
+}
+.fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+.gridView {
+  font-size: 160px;
+  line-height: 200px;
+  width: 160px;
+  height: 160px;
+}
+.gridSquare.renderCloak .gridView {
+  display: none;
+}
+.gridSquare.renderCloak.renderFail .gridView {
+  display: block;
+}
+.gridSquare.renderCloak.renderFail svg {
+  display: none;
+}
+.tcell {
+  min-width: 32px;
+  min-height: 32px;
+  margin: 0 3px;
+  background-color: gray;
+}
+.tcell.yellow {
+  background-color: yellow;
+}
+.tcell.blue {
+  outline: 6px solid blue;
+}
+.foregroundText {
+  color: #FFF;
+}
+.foregroundText a {
+  color: #FFF;
+}
+.foregroundText a:visited {
+  color: #DDF;
+}
+/* https://stackoverflow.com/questions/4910963/how-to-create-a-pulse-effect-using-webkit-animation-outward-rings */
+.touchIndicator {
+    border: 5px solid #FFF;
+    border-radius: 100px;
+    /* https://mobiforge.com/design-development/designing-touch-thumb-and-finger-sized-design */
+    height: 100px;
+    width: 100px;
+    position: absolute;
+    animation: pulsate 1s ease-out;
+    animation-iteration-count: infinite; 
+    opacity: 1.0
+}
+.touchIndicator.isSecond {
+  animation-delay: 0.5s;
+  opacity: 0.0;
+}
+@keyframes pulsate {
+    0% {transform: scale(0.1, 0.1); opacity: 0.0;}
+    50% {opacity: 1.0;}
+    100% {transform: scale(1.0, 1.0); opacity: 0.0;}
+}
+</style>
+<!--base href="/"-->
+</head>
+<link rel="icon" href="/static/logo.ico">
+<!-- #C5C5AC; 7C819D; #EDC9AF; #708090 all nice -->
+<body ng-controller="AppCtrl" layout="column" flex style="background-color: #708090;">
+<md-content style="background-color: #708090;">
+  <md-toolbar ng-style="{'background-color': $root.wind?'#333':null}">
+  <div class="md-toolbar-tools">
+    <md-button ng-repeat="(id, obj) in left" title="{{obj.title}}" ng-click="handle(true, $event, id)">
+      {{obj.name}}
+    </md-button>
+    <span ng-if="!$root.wind">
+      <md-icon md-svg-icon="witness:tetris"></md-icon>
+      <h1 style="display: inline; margin-left: 16px;">
+        The Witness Puzzle Simulator
+      </h1>
+    </span>
+    <a href="/" ng-if="$root.wind" style="text-decoration: none;">
+      <md-icon md-svg-icon="witness:tetris"></md-icon>
+      <h1 style="display: inline; margin-left: 16px;">
+        The Windmill
+      </h1>
+    </a>
+    <span class="md-caption" style="margin-left: 12px"><a href="faq.html" target="_blank">(FAQ)</a></span>
+    <span flex></span>
+    <md-button ng-repeat="(id, obj) in right" title="{{obj.title}}" ng-click="handle(false, $event, id)">
+      {{obj.name}}
+    </md-button>
+    <a class="md-button" href="/login" ng-attr-target="{{editing?'_blank':null}}" ng-show="$root.wind&&!self.self">Log in</a>
+    <a class="md-button" href="/user/{{self.self}}" class="userLink" ng-attr-target="{{editing?'_blank':null}}" ng-show="$root.wind&&self.self">User {{self.name}}</a>
+  </div>
+</md-toolbar>
+<div style="width: 100%; height: 0; overflow: visible;" id="tooltoast"></div>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="width: 0; height: 0;">
+  <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+  </filter>
+</svg>
+<!--<div style="display: flex; flex-direction: row; flex-wrap: wrap; max-width: 1500px; height: 100%; background-color: #708090" id="all">
+  <div style="width: 300px; display: flex; flex-shrink: 0; width: 300px; background-color: #708090">-->
+<!-- https://stackoverflow.com/questions/26689816/how-to-get-a-full-height-sidenav-with-angular-material -->
+<section ui-view autoscroll="false"></section>
+<div id="bottom" style="width: 0; height: 0;"></div>
+</md-content>
+</body>
+</html>
+

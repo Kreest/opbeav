@@ -1,0 +1,40 @@
+<md-dialog aria-label="" ng-cloak>
+  <form name="renameForm">
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>
+          Change username
+        </h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon md-svg-src="witness:error" aria-label="Close dialog" title="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content" layout="column">
+        <p>
+          Change your username to anything sane! No spaces or ù̸̟̘̀ņ̷̮̈̍ǔ̵͖̝̊s̸͍̺͐͆u̵̯̙͛̐ȁ̸̘͕͒l̴̯̾̄ͅ ̸͍̲̂̈c̸̪̬̿͗ȟ̴̘̮͌ä̵̘̟̈́ṙ̴̢̥́a̵̻̯͌͠c̸͉̆͜͝ṱ̴̦̈́̕e̵̢̻̓̊r̶̠̹͋̑ş̵͚͆̅.
+        </p>
+        <p>
+          The name must be unique throughout the site.
+          It will be displayed on all puzzles you publish, so nothing scandalous please!
+          Your user page URL will remain the same (random ID).
+        </p>
+        <md-input-container style="margin: 4px 0">
+          <label>User name</label>
+          <input name="name" ng-model="model.name">
+          <div ng-show="renameForm.name.$error.serverError" style="color: red; font-size: 12px;">
+            {{renameForm.name.$error.serverError}}
+          </div>
+        </md-input-container>
+      </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="change()">
+        Change
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>
