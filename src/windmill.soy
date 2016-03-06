@@ -38,6 +38,8 @@
       green
     {case Color.BLUE}
       blue
+    {case Color.ORANGE}
+      orange
   {/switch}
 {else}
   gray
@@ -292,7 +294,7 @@
 //{let $coords: ['x': 10, 'y': 10] /}{let $scale: 0.8 /}
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1"><defs>
 {foreach $color in [Color.BLACK, Color.WHITE, Color.CYAN, Color.MAGENTA, Color.YELLOW,
-                    Color.RED, Color.GREEN, Color.BLUE]}
+                    Color.RED, Color.GREEN, Color.BLUE, Color.ORANGE]}
   <g id="square{$color}">
     <g transform="{$zoom15}">
     {call .squareSvg data="$coords"}
@@ -530,7 +532,7 @@
   {@param extras: ?}
   {@param editEntity: ?}
   //{@param type: number}
-{let $entity: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j, 'i': $i, 'j': $j, 'drawType': $drawType, 'highlight': true, 'removeAlways': $editEntity.type == Type.BASIC] /}
+{let $entity: ['x': UI.GRID_UNIT*$i, 'y': UI.GRID_UNIT*$j, 'i': $i, 'j': $j, 'drawType': $drawType, 'highlight': true, 'alwaysRemove': $editEntity.type == Type.BASIC] /}
 {let $remove: $type == $editEntity.type /}
 // Holy switch
 {switch $drawType}

@@ -243,9 +243,13 @@ GridUi.prototype.clearEditEntity = function() {
 }
 GridUi.prototype.setEditEntity = function(data) {
   // This method *always* renders anew.
+  // TODO: Should move setting width/height/symmetry to a different method?
   this.editEntity = null;
   if (data.width != this.grid.width || data.height != this.grid.height) {
     this.grid.initialize(data.width, data.height);
+  }
+  if (data.symmetry != this.grid.symmetry) {
+    this.grid.setSymmetry(data.symmetry);
   }
   var entityMap = {
     'basic': Type.BASIC,
@@ -311,24 +315,49 @@ GridUi.prototype.attemptInsert = function(coord, drawType, el) {
   if (!this.editEntity) {
     return;
   }
+  var currentVal = this.grid.drawTypeEntity(coord, drawType);
+  var otherCoord = goog.bind(function(value) {
+    // TODO: Should probably return a new DrawType when START/END
+    // vlines/hlines exist.
+    var sym = this.grid.getSymmetry();
+    if (sym && (value.type == Type.START || value.type == Type.END ||
+            currentVal.type == Type.START || currentVal.type == Type.END)) {
+      return sym.reflectPoint(coord);
+    }
+  }, this);
   if (el.getAttribute('data-op') == '1') {
-    // Regular insertion
-    var entity = new Entity(this.editEntity);
-    if (entity.type == Type.END) {
-      var orient = this.grid.getEndPlacement(coord.i, coord.j);
-      if (!orient) {
-        return;
+    var insert = goog.bind(function(coord, drawType) {
+      var entity = new Entity(this.editEntity);
+      if (entity.type == Type.END) {
+        var orient = this.grid.getEndPlacement(coord.i, coord.j);
+        if (!orient) {
+          return;
+        }
+        entity.orientation = orient;
       }
-      entity.orientation = orient;
+      this.grid.drawTypeEntity(coord, drawType, entity);
+    }, this);
+    // Regular insertion
+    var other = otherCoord(this.editEntity);
+    insert(coord, drawType);
+    if (other) {
+      if (this.editEntity.type == Type.START || this.editEntity.type == Type.END) {
+        insert(other, drawType);
+      } else {
+        this.grid.drawTypeEntity(other, drawType, new Entity());
+      }
     }
     this.puzzleVersion++;
-    this.grid.drawTypeEntity(coord, drawType, entity);
     el.setAttribute('data-op', 2);
     goog.dom.classlist.add(el, 'isRemoval');
   } else {
     // Removal
-    this.puzzleVersion++;
+    var other = otherCoord(this.grid.drawTypeEntity(coord, drawType));
     this.grid.drawTypeEntity(coord, drawType, new Entity());
+    if (other) {
+      this.grid.drawTypeEntity(other, drawType, new Entity());
+    }
+    this.puzzleVersion++;
     if (this.editEntity.type != Type.BASIC) {
       el.setAttribute('data-op', 1);
       goog.dom.classlist.remove(el, 'isRemoval');
@@ -407,7 +436,10 @@ GridUi.prototype.onPointerLock = function(turnt) {
 GridUi.prototype.initializeSnakeInternal = function(
     coords, opt_mouseCoords, opt_isTouch) {
   this.snake = new Snake(
-      coords, document.getElementById('gridPath'), opt_mouseCoords);
+      coords,
+      document.getElementById('gridPath'),
+      opt_mouseCoords,
+      this.grid.getSymmetry() || undefined);
   this.snakeHandler = new goog.events.EventHandler(this);
   var ignoreNextClick = false;
   // TODO: This doesn't actually seem to work anymore. Why??
@@ -498,7 +530,6 @@ GridUi.prototype.updateSnake = function() {
   }, this), 0);
 }
 
-
 GridUi.prototype.finishSnake = function() {
   if (!this.snake) {
     return;
@@ -536,7 +567,7 @@ GridUi.prototype.finishSnake = function() {
     return;
   }
   // Success or failure at end
-  var errs = windmill.validate.getErrors(this.grid, this.snake.movement);
+  var errs = windmill.validate.getErrors(this.grid, this.snake.movement, this.snake.secondaryMovement);
   if (errs.messages.length) {
     var messages = [];
     goog.array.removeDuplicates(errs.messages, messages);
@@ -659,7 +690,7 @@ GridUi.NavigationSelector.prototype.pointIsReachable = function(
   return 'no';
 }
 GridUi.NavigationSelector.prototype.selectTarget = function(
-    movement, di, dj, preferHorizontal) {
+    di, dj, preferHorizontal, movement, secondaryMovement) {
   var grid = this.grid;
   // Select something
   var current = movement[movement.length - 1];
@@ -673,20 +704,53 @@ GridUi.NavigationSelector.prototype.selectTarget = function(
     diBack = previous.i - current.i;
     djBack = previous.j - current.j;
   }
+  var secondary = null;
+  if (secondaryMovement) {
+    var symmetry = grid.getSymmetry();
+    secondary = {
+      symmetry: symmetry,
+      movement: secondaryMovement,
+      current: secondaryMovement[secondaryMovement.length - 1]
+    };
+  }
   var crossesPath = function(di, dj) {
-    return goog.array.find(movement, function(coord) {
+    var blocker = goog.array.find(movement, function(coord) {
       var targetIsCoord =
           coord.i == current.i + di && coord.j == current.j + dj;
       var isBacktrack = di == diBack && dj == djBack;
       return targetIsCoord ? !isBacktrack : false;
     });
+    if (blocker != null) {
+      return {blocker: blocker, midway: false};
+    }
+    if (secondary) {
+      var sd = symmetry.reflectDelta({di: di, dj: dj});
+      if (current.i + di == secondary.current.i + sd.di &&
+          current.j + dj == secondary.current.j + sd.dj) {
+        return {vertex: true, midway: true};
+      }
+      if (current.i + di == secondary.current.i &&
+          current.j + dj == secondary.current.j) {
+        return {vertex: false, midway: true};
+      }
+      blocker = goog.array.find(secondary.movement, function(coord) {
+        var targetIsCoord =
+            coord.i == current.i + di && coord.j == current.j + dj;
+        return targetIsCoord;
+      });
+      if (blocker != null) {
+        return {blocker: blocker, midway: false};
+      }
+    }
+    return null;
   }
   var calcProgress = function(di, dj) {
     if (di == 0 && dj == 0) {
       return 'no';
     }
+    // TODO: Clean this up, so length is calculated at the very
+    // end and semantic meaning is preserved (e.g. for isEnd).
     var reach = this.pointIsReachable(current, di, dj);
-    var blocker = crossesPath(di, dj);
     if (reach == 'no') {
       return 0;
     } else if (reach == 'end') {
@@ -694,12 +758,30 @@ GridUi.NavigationSelector.prototype.selectTarget = function(
     } else if (reach == 'disjoint') {
       return UI.DISJOINT_LENGTH;
     }
-    if (blocker) {
-      var point = grid.pointEntity(blocker.i, blocker.j);
-      if (!point) {
-        throw Error('bad element in path');
+    if (secondary) {
+      var sd = symmetry.reflectDelta({di: di, dj: dj});
+      reach = this.pointIsReachable(
+          secondary.current, sd.di, sd.dj);
+      if (reach == 'no') {
+        return 0;
+      } else if (reach == 'end') {
+        return UI.END_LENGTH;
+      } else if (reach == 'disjoint') {
+        return UI.DISJOINT_LENGTH;
       }
-      return point.type == Type.START ? 50 : 70;
+    }
+    var cross = crossesPath(di, dj);
+    if (cross) {
+      var blocker = cross.blocker;
+      if (blocker) {
+        var point = grid.pointEntity(blocker.i, blocker.j);
+        if (!point) {
+          throw Error('bad element in path');
+        }
+        return point.type == Type.START ? 65 : 80;
+      } else if (cross.midway) {
+        return cross.vertex ? 90 : 40;
+      }
     }
     return -1;
   }
