@@ -42,7 +42,7 @@ WINDMILL_EXTERNS=`ls \
 
 # Need to install bytebuffer. DON'T do this for protobufjs because we have a
 # special snowflake version.
-if [[ -x static/bytebuffer.min.js ]]; then
+if [[ ! -f static/bytebuffer.min.js ]]; then
   cp node_modules/bytebuffer/dist/bytebuffer.min.js static/
 fi
 if [[ -n $1 ]]; then
