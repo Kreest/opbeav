@@ -363,6 +363,9 @@ GridUi.prototype.attemptInsert = function(coord, drawType, el) {
       goog.dom.classlist.remove(el, 'isRemoval');
     }
   }
+  // All of the above double-editing is because by default, sanitize will
+  // add double starts/ends, which makes it impossible to get rid of them.
+  this.grid.sanitize();
   this.render();
 }
 GridUi.prototype.initializeSnake = function(
