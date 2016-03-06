@@ -8,6 +8,7 @@ var GridProto = windmill.GridProto;
 var Entity = GridProto.Entity;
 var Shape = GridProto.Shape;
 var Type = GridProto.Type;
+var SymmetryType = GridProto.SymmetryType;
 var Color = GridProto.Color;
 var Storage = GridProto.Storage;
 var Orientation = GridProto.Orientation;
@@ -72,11 +73,14 @@ Grid.prototype.initialize = function(width, height, opt_data) {
   // Grid state.
   if (storage) {
     this.entities = storage.entity;
+    this.symmetry = storage.symmetry || SymmetryType.NONE;
+    this.sanitize();
   } else {
     this.entities = [];
     for (var i = 0; i < this.storeWidth * this.storeHeight; i++) {
       this.entities[i] = new Entity();
     }
+    this.symmetry = SymmetryType.NONE;
     // Some freebies.
     // TODO: More configurations.
     this.pointEntity(0, this.height, new Entity(Type.START));
@@ -192,7 +196,11 @@ Grid.prototype.getHash = function() {
       entities.push(e);
     }
   }, this);
-  var encode = new Storage(this.storeWidth, entities).encode64();
+  var storage = new Storage(this.storeWidth, entities);
+  if (this.symmetry && this.symmetry != SymmetryType.NONE) {
+    storage.symmetry = this.symmetry;
+  }
+  var encode = storage.encode64();
   // Make it more URL-safe.
   // Note that this only affects 0x3E and 0x3F, which does not occur
   // much in protobufs due to how it encodes things.
@@ -294,6 +302,39 @@ Grid.prototype.forEachEntity = function(fn, opt_scope) {
     }
   }
 }
+Grid.prototype.setSymmetry = function(symmetry) {
+  this.symmetry = symmetry;
+  this.sanitize();
+}
+Grid.prototype.sanitize = function() {
+  var sym = this.getSymmetry();
+  if (!sym) {
+    return;
+  }
+  this.forEachEntity(function(value, i, j, drawType) {
+    if (drawType == DrawType.POINT &&
+        (value.type == Type.START || value.type == Type.END)) {
+      var ref = sym.reflectPoint({i: i, j: j});
+      var refValue = this.pointEntity(ref.i, ref.j);
+      if (value.type != refValue.type) {
+        if (value.type == Type.END) {
+          value = new Entity(value);
+          value.orientation = this.getEndPlacement(ref.i, ref.j);
+        }
+        this.pointEntity(ref.i, ref.j, value);
+      }
+    }
+  }, this);
+}
+Grid.prototype.getSymmetry = function() {
+  if (this.symmetry == SymmetryType.NONE) {
+    return null;
+  } else {
+    return new Grid.Symmetry(this.symmetry, this.width, this.height);
+  }
+}
+// Returns the automatic end orientation at a coord i, j.
+// This is symmetrical for all coordinates and symmetries.
 Grid.prototype.getEndPlacement = function(i, j) {
   for (var di = -1; di <= 1; di += 2) {
     var line = this.lineBetweenEntity(i, j, i + di, j);
@@ -308,6 +349,39 @@ Grid.prototype.getEndPlacement = function(i, j) {
     }
   }
   return null;
+}
+
+/** @constructor */
+Grid.Symmetry = function(type, width, height) {
+  this.type = type;
+  this.width = width;
+  this.height = height;
+}
+Grid.Symmetry.prototype.reflectPoint = function(coord) {
+  if (this.type == SymmetryType.HORIZONTAL) {
+    return {i: this.width - coord.i, j: coord.j};
+  } else if (this.type == SymmetryType.VERTICAL) {
+    return {i: coord.i, j: this.height - coord.j};
+  } else if (this.type == SymmetryType.ROTATIONAL) {
+    return {i: this.width - coord.i, j: this.height - coord.j};
+  } else {
+    throw Error(this.type);
+  }
+}
+Grid.Symmetry.prototype.reflectDelta = function(delta) {
+  // Avoid introducing negative zero here.
+  var negate = function(n) {
+    return n == 0 ? n : -n;
+  }
+  if (this.type == SymmetryType.HORIZONTAL) {
+    return {di: negate(delta.di), dj: delta.dj};
+  } else if (this.type == SymmetryType.VERTICAL) {
+    return {di: delta.di, dj: negate(delta.dj)};
+  } else if (this.type == SymmetryType.ROTATIONAL) {
+    return {di: negate(delta.di), dj: negate(delta.dj)};
+  } else {
+    throw Error(this.type);
+  }
 }
 
 });

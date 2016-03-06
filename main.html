@@ -77,6 +77,14 @@ For ease of offline development, can also use our own static files.
   width: 32px;
   height: 32px;
 }
+.colorButton {
+  min-width: 48px;
+  margin: 0;
+  vertical-align: top;
+}
+.colorButton.isSelected {
+  border: 2px solid black;
+}
 .gridSquare {
   margin: 4px;
   display: inline-block;
@@ -198,8 +206,9 @@ ul.flatList > li+li {
 .tcell {
   min-width: 32px;
   min-height: 32px;
-  margin: 0 3px;
+  margin: 3px 3px;
   background-color: gray;
+  vertical-align: top;
 }
 .tcell.yellow {
   background-color: yellow;

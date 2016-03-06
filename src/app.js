@@ -319,12 +319,12 @@ var EditorCtrl = function(
   }
   $scope['neg'] = false;
   $scope['origin'] = window.location.origin;
-  // May be nullable.
   var initializeGridData = function() {
     if ($grid.isGridInitialized()) {
-      var dim = $grid.getDimensions();
-      $scope['w'] = dim.width;
-      $scope['h'] = dim.height;
+      var init = $grid.getInitialState();
+      $scope['w'] = init.width;
+      $scope['h'] = init.height;
+      $scope['symmetry'] = init.symmetry;
     }
     // If initialized from hash, manually close pane.
     // With sunsetting of static simulator, this has changed
@@ -347,6 +347,8 @@ var EditorCtrl = function(
     'hexagon',
     'disjoint'
   ];
+  // Should match grid.proto.
+  // In theory could derive a reverse mapping here.
   $scope['ccodes'] = {
       1: 'black',
       2: 'white',
@@ -355,8 +357,15 @@ var EditorCtrl = function(
       5: 'yellow',
       6: 'red',
       7: 'green',
-      8: 'blue'
-  }
+      8: 'blue',
+      9: 'orange'
+  };
+  $scope['scodes'] = {
+      1: 'No symmetry',
+      2: 'Horizontal symmetry',
+      3: 'Vertical symmetry',
+      4: 'Rotational symmetry'
+  };
   // Some utilities.
   var safeInt = function(i) {
     i = parseInt(i);
@@ -389,6 +398,9 @@ var EditorCtrl = function(
   }
   $scope.getSelectClass = function(n) {
     return n == $scope['obj'] ? 'isSelected' : null;
+  }
+  $scope.getSelectColorClass = function(n) {
+    return n == $scope['color'] ? 'isSelected' : null;
   }
   $scope.selectColor = function(n) {
     $scope['color'] = n;
@@ -429,7 +441,8 @@ var EditorCtrl = function(
         grid: tetris['g'],
         gridWidth: 5,
         gridFixed: tetris['f'],
-        count: $scope['count']
+        count: $scope['count'],
+        symmetry: safeInt($scope['symmetry'])
       };
       $grid.setEditEntity(data);
     } else if ($mdMedia('gt-sm')) {
@@ -443,7 +456,7 @@ var EditorCtrl = function(
     var tetris = $scope['tetris'][$scope['neg']];
     return [
       $scope['obj'], $scope['color'], $scope['w'], $scope['h'],
-      tetris['f'], $scope['neg'], $scope['count']
+      tetris['f'], $scope['neg'], $scope['count'], $scope['symmetry']
     ].join('.')
   }, alertGrid);
   $scope.$watch(function() {
@@ -514,6 +527,7 @@ var EditorCtrl = function(
     // Timeout necessary because the grid can't just be rendered, it has to
     // be in the document, and the controller is initiated before document
     // inclusion.
+    // TODO: Revisit this given recent Grid/GridRenderer refactor.
     setTimeout(function() {
       $grid.render();
       if (!gridAvailable) {
@@ -1030,9 +1044,13 @@ GridService.prototype.getSolvePath = function() {
   return grid.solvedPuzzleVersion == grid.solvedPuzzleVersion ?
       grid.solvedPuzzlePath : null;
 }
-GridService.prototype.getDimensions = function() {
+GridService.prototype.getInitialState = function() {
   var grid = goog.asserts.assert(this.currentGrid());
-  return {width: grid.grid.width, height: grid.grid.height};
+  return {
+    width: grid.grid.width,
+    height: grid.grid.height,
+    symmetry: grid.grid.symmetry
+  };
 }
 GridService.prototype.setEditEntity = function(opt_data) {
   var grid = goog.asserts.assert(this.currentGrid());

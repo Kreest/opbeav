@@ -15,11 +15,26 @@ var SegmentType = GridProto.SegmentType;
 
 var UI = windmill.constants.UI;
 
+
 /** @constructor */
-windmill.Snake = function(start, draw, opt_mouseCoords) {
-  this.snakeId = Snake.snakeId_++;
+windmill.Snake = function(start, draw, opt_mouseCoords, opt_symmetry) {
   // The current path.
+  this.snakeId = Snake.snakeId_++;
   this.movement = [start];
+  // Symmetry snakes (render-only)
+  if (opt_symmetry) {
+    this.symmetry = opt_symmetry;
+    this.secondarySnakeId = Snake.snakeId_++;
+    this.secondaryMovement = [this.symmetry.reflectPoint(start)];
+  } else {
+    this.symmetry = null;
+    this.secondarySnakeId = null;
+    this.secondaryMovement = null;
+  }
+  // SVG elements
+  this.snakeEl = null;
+  this.secondarySnakeEl = null;
+  // Progress through path
   this.target = null;
   this.targetMaxProgress = null;
   this.targetIsEnd = null;
@@ -34,7 +49,6 @@ windmill.Snake = function(start, draw, opt_mouseCoords) {
   this.mouseX = opt_mouseCoords ? opt_mouseCoords.x : 0;
   this.mouseY = opt_mouseCoords ? opt_mouseCoords.y : 0;
   this.frameTime = new ElapsedTime();
-  this.mouseTime = new ElapsedTime();
   this.mouseHistoryX = [];
   this.mouseHistoryY = [];
   this.targetingMouse = !!opt_mouseCoords;
@@ -58,16 +72,19 @@ Snake.prototype.markSuccessful = function() {
         'filter',
         'url(' + window.location.href.split('#')[0] + '#glow)');
   }
+  if (this.secondarySnakeEl) {
+    this.secondarySnakeEl.style.setProperty(
+        'filter',
+        'url(' + window.location.href.split('#')[0] + '#glow)');
+  }
 }
 Snake.prototype.setMouse = function(mouseX, mouseY) {
   this.mouseX = mouseX;
   this.mouseY = mouseY;
-  this.mouseTime.step();
 }
 Snake.prototype.setMouseDiff = function(mouseX, mouseY) {
   this.mouseX += mouseX;
   this.mouseY += mouseY;
-  this.mouseTime.step();
 }
 Snake.prototype.calcMouseOnGrid = function() {
   var gridOnPage = goog.style.getPageOffset(
@@ -110,9 +127,6 @@ Snake.prototype.moveTowardsMouse = function(msPerGridUnit, selector) {
     if (this.mouseHistoryX.length > 3) {
       this.mouseHistoryX.shift();
       this.mouseHistoryY.shift();
-    }
-    if (!this.mouseTime.lastStep) {
-      return;
     }
 
     // Icky... should ideally separate max distance into vertical and horizontal.
@@ -265,6 +279,9 @@ Snake.prototype.moveTowardsTarget = function(maxMovement, selector) {
       throw Error();
     }
     this.movement.push(this.target);
+    if (this.symmetry) {
+      this.secondaryMovement.push(this.symmetry.reflectPoint(this.target));
+    }
     this.clearTarget();
     this.progress = 0;
     // console.log('Forwards, target null!');
@@ -287,7 +304,11 @@ Snake.prototype.discoverTarget = function(selector, params) {
   var previous = this.movement.length > 1 ?
       this.movement[this.movement.length - 2] : null;
   var response = selector.selectTarget(
-      this.movement, params.di, params.dj, params.preferHorizontal);
+      params.di,
+      params.dj,
+      params.preferHorizontal,
+      this.movement,
+      this.secondaryMovement);
   var select = response.select;
   // Allow the case where select is absent or equal to previous value.
   if (!select || (select.i == current.i && select.j == current.j)) {
@@ -306,6 +327,9 @@ Snake.prototype.discoverTarget = function(selector, params) {
   }
   if (previous && (select.i == previous.i && select.j == previous.j)) {
     this.movement.pop();
+    if (this.symmetry) {
+      this.secondaryMovement.pop();
+    }
     this.target = current;
     this.targetMaxProgress = null;
     this.progress = MAX_PROGRESS;
@@ -334,20 +358,17 @@ Snake.prototype.getHead = function() {
   }
   return {x: x, y: y};
 }
-Snake.prototype.render = function() {
-  if (!this.anythingChanged()) {
-    return;
-  }
+Snake.prototype.getRenderContents = function(movement, target) {
   // Initial output: start, direction. If last one, also include progress.
   // In the future, add arcs.
   var contents = [];
   var previous = null;
-  for (var i = 0; i <= this.movement.length; i++) {
-    var isEnd = i == this.movement.length;
-    if (isEnd && !this.target) {
+  for (var i = 0; i <= movement.length; i++) {
+    var isEnd = i == movement.length;
+    if (isEnd && !target) {
       continue;
     }
-    var coords = isEnd ? this.target : this.movement[i];
+    var coords = isEnd ? target : movement[i];
     var segment = {i: coords.i, j: coords.j};
     if (!previous) {
       segment.segmentType = SegmentType.START;
@@ -367,17 +388,36 @@ Snake.prototype.render = function() {
     contents.push(segment);
     previous = coords;
   }
+  return contents;
+}
+Snake.prototype.renderSingle = function(contents, snakeId, snakeEl) {
   // Ugly DOM manipulation to insert SVG dynamically.
-  if (!this.snakeEl) {
-    this.snakeEl = document.createElementNS("http://www.w3.org/2000/svg", 'g')
-    this.snakeEl.setAttribute('id', 'path' + this.snakeId);
-    this.draw.appendChild(this.snakeEl);
+  if (!snakeEl) {
+    snakeEl = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    snakeEl.setAttribute('id', 'path' + snakeId);
+    this.draw.appendChild(snakeEl);
   }
   // TODO: Incremental update to make performance even better.
   goog.soy.renderElement(
-      this.snakeEl,
+      snakeEl,
       windmill.templates.snakeSvg,
       {contents: contents});
+  return snakeEl;
+}
+Snake.prototype.render = function() {
+  if (!this.anythingChanged()) {
+    return;
+  }
+  var contents = this.getRenderContents(this.movement, this.target);
+  this.snakeEl = this.renderSingle(contents, this.snakeId, this.snakeEl);
+  if (this.symmetry) {
+    var symTarget = this.target ? this.symmetry.reflectPoint(this.target) : null;
+    contents = this.getRenderContents(this.secondaryMovement, symTarget);
+    this.secondarySnakeEl = this.renderSingle(
+        contents,
+        this.secondarySnakeId,
+        this.secondarySnakeEl);
+  }
 }
 Snake.prototype.anythingChanged = function() {
   // Cute little hash code avoid constantly rendering.
@@ -404,23 +444,28 @@ Snake.prototype.stringRepr = function() {
   }
   return record.join(' ');
 }
-Snake.prototype.fade = function(opt_timeout, opt_callback) {
-  if (!this.snakeEl) {
-    throw Error();
-  }
-  // Optimized for single-snake case.
+Snake.prototype.fadeSingle = function(snakeEl, opt_timeout, opt_callback) {
   if (opt_timeout) {
-    this.snakeEl.style.transition = 'opacity ' + opt_timeout + 'ms ease-out';
-    this.snakeEl.style.opacity = '0';
+    snakeEl.style.transition = 'opacity ' + opt_timeout + 'ms ease-out';
+    snakeEl.style.opacity = '0';
     setTimeout(goog.bind(function() {
-      this.snakeEl.innerHTML = '';
-      this.snakeEl.parentNode.removeChild(this.snakeEl);
+      snakeEl.innerHTML = '';
+      snakeEl.parentNode.removeChild(snakeEl);
       if (opt_callback) {
         opt_callback();
       }
     }, this), opt_timeout);
   } else {
-    this.snakeEl.parentNode.removeChild(this.snakeEl);
+    snakeEl.parentNode.removeChild(snakeEl);
+  }
+}
+Snake.prototype.fade = function(opt_timeout, opt_callback) {
+  if (!this.snakeEl) {
+    throw Error();
+  }
+  this.fadeSingle(this.snakeEl, opt_timeout, opt_callback);
+  if (this.secondarySnakeEl) {
+    this.fadeSingle(this.secondarySnakeEl, opt_timeout);
   }
 }
 

@@ -52,20 +52,31 @@ enum Color {
   RED = 6;
   GREEN = 7;
   BLUE = 8;
+  ORANGE = 9;
+}
+enum SymmetryType {
+  UNKNOWN = 0;
+  NONE = 1;
+  HORIZONTAL = 2;
+  VERTICAL = 3;
+  ROTATIONAL = 4;
 }
 message Storage {
   int32 width = 1;
   repeated Entity entity = 2;
+  optional SymmetryType symmetry = 3;
 }
 // Non-wire enums.
 enum DrawType {
-  CELL = 0;
-  POINT = 1;
-  HLINE = 2;
-  VLINE = 3;
+  UNKNOWN = 0;
+  CELL = 1;
+  POINT = 2;
+  HLINE = 3;
+  VLINE = 4;
 }
 enum SegmentType {
-  START = 0;
-  MIDDLE = 1;
-  END = 2;
+  UNKNOWN = 0;
+  START = 1;
+  MIDDLE = 2;
+  END = 3;
 }

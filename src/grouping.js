@@ -16,12 +16,15 @@ var coordKey = windmill.keys.coordKey;
 var lineKey = windmill.keys.lineKey;
 
 /** @constructor */
-windmill.Path = function(coords, width, height) {
+windmill.Path = function(coords, width, height, opt_newPaths) {
   // TODO: Also take in a grid shape, to enable non-standard grids.
   this.coords = coords;
   this.coordsMap = goog.array.toObject(coords, coordKey);
   var lines = [];
   for (var i = 1; i < coords.length; i++) {
+    if (opt_newPaths && goog.array.contains(opt_newPaths, i)) {
+      continue;
+    }
     var c1 = coords[i-1];
     var c2 = coords[i];
     lines.push({
