@@ -1119,7 +1119,7 @@ var Config = function(
     window.location.href = path;
   }
   $mdIconProvider
-    .iconSet('witness', '/static/witness.svg?v=0', 100)
+    .iconSet('witness', '/static/witness.svg?v=2', 100)
   $mdIconProvider
     .icon('basic', '/static/basic.svg', 550)
 
