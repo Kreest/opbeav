@@ -316,7 +316,9 @@ Grid.prototype.sanitize = function() {
         (value.type == Type.START || value.type == Type.END)) {
       var ref = sym.reflectPoint({i: i, j: j});
       var refValue = this.pointEntity(ref.i, ref.j);
-      if (value.type != refValue.type) {
+      if (i == ref.i && j == ref.j) {
+        this.pointEntity(i, j, new Entity());
+      } else if (value.type != refValue.type) {
         if (value.type == Type.END) {
           value = new Entity(value);
           value.orientation = this.getEndPlacement(ref.i, ref.j);
