@@ -30,8 +30,19 @@ var shapeKey = windmill.keys.shapeKey;
 
 
 windmill.validate = {};
-windmill.validate.getErrors = function(grid, movement) {
-  var p = new windmill.Path(movement, grid.width, grid.height);
+windmill.validate.getErrors = function(grid, movement, secondaryMovement) {
+  var p;
+  if (secondaryMovement) {
+    p = new windmill.Path(
+        goog.array.concat(movement, secondaryMovement),
+        grid.width,
+        grid.height,
+        [movement.length]);
+  } else {
+    p = new windmill.Path(
+        movement, grid.width,
+        grid.height);
+  }
   var originalErrors = [];
   // Per-entity checks
   grid.forEachEntity(function(value, i, j, drawType) {
@@ -146,6 +157,8 @@ windmill.validate.getErrors = function(grid, movement) {
           color = val.cell.shape.negative ? Color.BLUE : Color.YELLOW;
         } else if (val.cell.type == Type.ERROR) {
           color = Color.WHITE;
+        } else if (val.cell.type == Type.TRIANGLE) {
+          color = Color.ORANGE;
         } else {
           return;
         }
