@@ -1,5 +1,5 @@
 <div id="content" flex style="background-color: transparent;">
-<div style="margin: 0 16px; max-width: 800px;" class="foregroundText">
+<div style="margin: 0 16px 32px 16px; max-width: 800px;" class="foregroundText">
   <p>A simple FAQ for all of your needs!</p>
 
   <h2 style="md-title">
@@ -9,23 +9,26 @@ What is this website?
 The Windmill is an interactive alternative to pen, graph paper, and a camera for creating and sharing puzzles using the puzzle language of the <s>2011</s> 2016 video game The Witness. Anyone can play and build puzzles and anyone can share puzzles with the world. I am not associated with Thekla Inc and this website uses no assets or code from the game.
   </p>
   <p>
-It was originally called The Witness Puzzle Simulator and it was just a static website. It is still running at
-<a href="http://thefifthmatt.com/witness/build.html">build.html</a>. It will auto-redirect here once this website
-proves stable enough, and once auto-generate is ported over in a basic way.
+Check out <a href="https://reddit.com/r/thewindmill" target="_blank">/r/thewindmill</a>
+on Reddit to find changelogs and various useful links.
+  </p>
+  <p>
+This app was originally called The Witness Puzzle Simulator and it was just a static website.
+That website now redirects here.
   </p>
 
   <h2 style="md-title">
 Is this website a video game?
   </h2>
   <p>
-It is a tool for The Witness community. If you want to learn the puzzle mechanics, I'd strongly encourage you to play The Witness. The way they interact with the game world is in service of ideas which are awe-inspiring and transcendent.
+It is a tool for The Witness community. If you want to learn the puzzle mechanics, I'd strongly encourage you to play The Witness. The way they interact with the game world is in service of ideas which are really awe-inspiring.
   </p>
 
   <h2 style="md-title">
 How does this website work?
   </h2>
   <p>
-It is an AngularJS app with persistent server state. When building puzzles, all puzzle state is encoded in the URL. This means that you can keep a tab open and checkpoint offline.
+It is an AngularJS app with persistent server state. When building puzzles, all puzzle state can be encoded in the URL. This means that you can keep a tab open and checkpoint offline.
   </p>
   <p>
 Currently, anyone with a Google account login can publish puzzles. I am excited to see what you come up with!
@@ -54,12 +57,19 @@ See next section for how to report them!
 Are you going to add any more features?
   </h2>
   <p>
-Yes! Send suggestions <a href="http://goo.gl/forms/Jvn3cBsxXa" target="_blank">here</a> or to &lt;windmill&gt; at
-&lt;this website without the subdomain&gt;. Use GitHub issue tracking once that is set up.
+Yes! The best way to suggest features, or report bugs, or write code to implement
+features or fix bugs, is to use
+<a href="https://github.com/thefifthmatt/windmill-client/issues">GitHub issue tracking</a>,
+which requires a GitHub account.
+  </p>
+  <p>
+For something more lightweight, send suggestions
+<a href="http://goo.gl/forms/Jvn3cBsxXa" target="_blank">using this form</a> or
+directly to &lt;windmill&gt; at &lt;this website without the subdomain&gt;.
   </p>
   <p>
 Some feature requests which have been requested and will be implemented include:
-collections of puzzles to play in a row, "best" sorting for front page,
+collections of puzzles to play in a row,
 better play (arrow keys, click to draw on mobile, adjust better to screen size),
 better editing (keyboard shortcuts, drag to add multiple of the same thing, easier grid size changes),
 generation of close-to-uniquely solvable puzzles.
@@ -76,9 +86,10 @@ No.
 Where can I get the source?
   </h2>
   <p>
-On GitHub, as soon as I clean up the build system (it's Bash scripts with
-several different compilers involved), split up some massive files, and
-generally sanitize the whole thing.
+The client source is available at
+<a href="https://github.com/thefifthmatt/windmill-client" target="_blank">
+https://github.com/thefifthmatt/windmill-client</a>.
+Server source coming soon.
   </p>
 
 </div>

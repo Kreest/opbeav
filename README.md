@@ -100,7 +100,9 @@ This requires a PostgreSQL database and a whole separate tech stack,
 coming soon as a sister repository on Github.
 
 ## Contributing and testing
-If you are interested in contributing in any form, file a bug, comment on one,
+If you are interested in contributing in any form, go ahead and
+fork the repository and play around, [file an issue or comment on
+one](https://github.com/thefifthmatt/windmill-client/issues),
 or otherwise contact me! I will be responsive as work/home allows.
 
 JavaScript tends to follow the [Google JavaScript style
@@ -108,10 +110,10 @@ guide](https://google.github.io/styleguide/javascriptguide.xml).
 
 Note that because there are many missing features, many parts of the code base
 are not very stable. There are several planned refactorings.
-The overall structure is set in stone, however.
+The overall structure is stable.
 
 Generally, released features should not be broken at HEAD.
 In other words, please avoid regressions.
-So unit tests are definitely planned, mainly for grid validation code.
+Unit tests are definitely planned, mainly for grid validation code.
 Meanwhile, the policy is to thoroughly manually test,
 both uncompiled and compiled.
