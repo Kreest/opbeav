@@ -102,10 +102,15 @@ for tmpl in `ls src/*.tmpl.html`; do
         > static/${tmpl#src/}
 done
 # Replace our local JS with a single compiled file.
-# v= needs to be changed on every push. Find a better way to do this, e.g.
-# originated from the server once this is all rendered in Soy.
+# v= needs to be changed on every push. This might be better done by the
+# server.
+# Something gives a strange return value here.
+set +o pipefail
+codev=$(cat /dev/urandom | base64 | tr -cd '[:alpha:]' | head -c 8)
+set -o pipefail
+
 cat main.html | sed -e $sedcommand | \
-    sed -e 's#dist/runlocal.js#static/code.js?v=8#' | \
+    sed -e "s#dist/runlocal.js#static/code.js?v=${codev}#" | \
     sed -e 's#"static/#"/static/#g' | \
     html-minifier --remove-comments --collapse-whitespace --minify-css \
       > build.html

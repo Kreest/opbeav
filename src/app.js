@@ -1070,7 +1070,7 @@ GridService.prototype.getHash = function() {
 }
 GridService.prototype.getSolvePath = function() {
   var grid = goog.asserts.assert(this.currentGrid());
-  return grid.solvedPuzzleVersion == grid.solvedPuzzleVersion ?
+  return grid.puzzleVersion == grid.solvedPuzzleVersion ?
       grid.solvedPuzzlePath : null;
 }
 GridService.prototype.getInitialState = function() {
