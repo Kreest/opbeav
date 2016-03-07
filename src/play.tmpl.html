@@ -15,6 +15,7 @@
                     title="Linked from front page..."
                     ng-click="lockDialog($event)">lock_open</md-icon>
           </span>
+          <span ng-if="info.timeAgo" title="{{info.exactTime}}">{{info.timeAgo}}</span>
           by <a href="/user/{{info.creator}}">{{info.name}}</a>
         <li ng-controller="RatingCtrl" ng-init="init(info)" style="padding-left: 8px;">
           <md-icon class="material-icon"

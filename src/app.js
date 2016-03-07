@@ -540,15 +540,16 @@ var ListCtrl = function(
     $scope, $grid, $handlers, $stateParams, $state, $mdDialog, $mdToast,
     $self) {
   $scope['user'] = $stateParams['user'];
-  $scope['sorts'] = ['new', 'old', 'solved'];
+  $scope['sorts'] = ['hot', 'new', 'old', 'top', 'solved', 'unsolved'];
   $scope['sortTexts'] = {
+    'hot': 'Hottest puzzles',
     'new': 'Newest puzzles',
     'old': 'Oldest puzzles',
-    'solved': 'Most solved puzzles'
-    // TODO: Fix SQL join bug in server.
-    // 'unsolved': 'Least solved puzzles'
+    'top': 'Top puzzles',
+    'solved': 'Most solved puzzles',
+    'unsolved': 'Least solved puzzles'
   }
-  var defaultSort = 'new';
+  var defaultSort = 'hot';
   if (goog.array.contains($scope['sorts'], $stateParams['sort'])) {
     defaultSort = $stateParams['sort'];
   }
@@ -823,6 +824,30 @@ var PlayCtrl = function(
 PlayCtrl.clientSolved = {};
 PlayCtrl.promoShown = false;
 
+function calcTimeAgo(timestamp) {
+  // TODO: Should get library to do this. Yay localization.
+  var seconds = Math.floor((new Date() - timestamp) / 1000);
+  var word, interval;
+  if (seconds < 60) {
+    // Don't have 'n seconds' for the time being.
+    return 'just now';
+  } else if (seconds >= (interval = 60 * 60 * 24 * 365)) {
+    word = 'year';
+  } else if (seconds >= (interval = 60 * 60 * 24 * 30)) {
+    word = 'month';
+  } else if (seconds >= (interval = 60 * 60 * 24)) {
+    word = 'day';
+  } else if (seconds >= (interval = 60 * 60)) {
+    word = 'hour';
+  } else if (seconds >= (interval = 60)) {
+    word = 'minute';
+  } else {
+    interval = 1;
+    word = 'second';
+  }
+  var count = Math.floor(seconds / interval);
+  return count + ' ' + word + (count == 1 ? '' : 's') + ' ago';
+}
 var solveText = function(s) {
   return s + ' solve' + (s == 1 ? '' : 's');
 }
@@ -840,6 +865,10 @@ var augmentInfo = function(info, opt_humanText) {
     info['localVotes'] = info['upvotes'] - info['voted'];
   } else {
     info['localVotes'] = info['upvotes'];
+  }
+  if (info['createUtc']) {
+    info['timeAgo'] = calcTimeAgo(info['createUtc']);
+    info['exactTime'] = new Date(info['createUtc']).toString();
   }
 }
 

@@ -1,7 +1,7 @@
 <md-content style="background-color: transparent; margin-bottom: 32px;">
 <div ng-if="!user" class="foregroundText">
-  <md-input-container style="min-width: 100px; margin: 4px;">
-    <md-select ng-model="model.sortBy" aria-label="Sort by">
+  <md-input-container style="min-width: 160px; margin: 4px;">
+    <md-select ng-model="model.sortBy" aria-label="Sort by" size="10">
       <md-option ng-repeat="sort in sorts" ng-value="sort">{{sortTexts[sort]}}</md-option>
     </md-select>
   </md-input-container>
@@ -25,7 +25,8 @@
   <div class="gridMenu isBottom foregroundText">
     <div class="bottomText">
       <ul class="flatList">
-        <li>by <a href="/user/{{grid.creator}}">{{grid.name}}</a>
+        <li><span ng-if="grid.timeAgo" title="{{grid.exactTime}}">{{grid.timeAgo}}</span>
+            by <a href="/user/{{grid.creator}}">{{grid.name}}</a>
         <li ng-controller="RatingCtrl" ng-init="init(grid)" ng-if="!user">
           <md-icon class="material-icon"
                    ng-style="{'color': rinfo.voted==1?'yellow':'#AAA'}"

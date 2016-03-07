@@ -105,7 +105,7 @@ done
 # v= needs to be changed on every push. Find a better way to do this, e.g.
 # originated from the server once this is all rendered in Soy.
 cat main.html | sed -e $sedcommand | \
-    sed -e 's#dist/runlocal.js#static/code.js?v=7#' | \
+    sed -e 's#dist/runlocal.js#static/code.js?v=8#' | \
     sed -e 's#"static/#"/static/#g' | \
     html-minifier --remove-comments --collapse-whitespace --minify-css \
       > build.html

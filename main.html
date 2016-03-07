@@ -115,6 +115,19 @@ For ease of offline development, can also use our own static files.
   height: 30%;
   transform: translate(0, 100%);
   cursor: default;
+  font-size: 14px;
+}
+/**
+ * Visible scrollbar on macs. It's not very pretty, but UI bad otherwise.
+ * Based on https://davidwalsh.name/osx-overflow
+ */
+md-content::-webkit-scrollbar {
+   -webkit-appearance: none;
+   width: 12px;
+}
+md-content::-webkit-scrollbar-thumb {
+   background-color: rgba(0,0,0,.5);
+   -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 .gridMenu a, .gridMenu md-icon {
   cursor: pointer;
