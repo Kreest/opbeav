@@ -576,7 +576,7 @@ GridUi.prototype.finishSnake = function() {
     goog.array.removeDuplicates(errs.messages, messages);
     var message = messages.length == 1
       ? messages[0] : messages.join(' ');
-    this.fyi(message, true);
+    this.uiHook.fyi(message, true);
   }
   var errors = errs.errors;
   var allowedErrors = errs.allowedErrors;
