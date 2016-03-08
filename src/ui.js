@@ -173,10 +173,10 @@ GridUi.prototype.renderContents = function(contents) {
       function(el) {
     var node = parseDataC(el);
     var edit = parseDataOp(el);
-      // Currently, only start on points.
-    this.eventHandler.listen(el, 'click', function(ce) {
-      var e = ce.getBrowserEvent();
-      // Wait for click to finish.
+    if (el.getAttribute('data-touch') != '1') {
+      this.eventHandler.listen(el, 'click', function(ce) {
+        var e = ce.getBrowserEvent();
+        // Currently, only start on points.
         if (node.drawType == DrawType.POINT && !edit) {
           if (this.initializeSnake(
                   node.coord, e.pageX, e.pageY)) {
@@ -187,16 +187,20 @@ GridUi.prototype.renderContents = function(contents) {
           e.stopPropagation();
           this.attemptInsert(node.coord, node.drawType, el);
         }
-    });
-    this.eventHandler.listen(el, 'touchstart', function(ce) {
-      var e = ce.getBrowserEvent();
-      if (node.drawType == DrawType.POINT && node.play) {
-        this.initializeSnake(
-            node.coord,
-            e.touches[0].pageX, e.touches[0].pageY,
-            true /* optIsTouch */);
-      }
-    });
+      });
+    }
+    if (node.drawType == DrawType.POINT && !edit) {
+      this.eventHandler.listen(el, 'touchstart', function(ce) {
+        var e = ce.getBrowserEvent();
+        if (this.initializeSnake(
+                node.coord,
+                e.touches[0].pageX, e.touches[0].pageY,
+                true /* opt_isTouch */)) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
+    }
   }, this);
   this.eventHandler.listen(
       document.getElementById('content'), 'click', function() {
@@ -443,44 +447,39 @@ GridUi.prototype.initializeSnakeInternal = function(
       document.getElementById('gridPath'),
       opt_mouseCoords,
       this.grid.getSymmetry() || undefined);
+  this.snake.setTargetingMouse(!!opt_mouseCoords, !!opt_isTouch);
   this.snakeHandler = new goog.events.EventHandler(this);
   var ignoreNextClick = false;
-  // TODO: This doesn't actually seem to work anymore. Why??
   if (opt_isTouch) {
-    var firstDown = true;
-    var lastYDistance = null;
-    var lastTouch = null;
-    this.snakeHandler.listen(document, 'touchmove', function(ce) {
+    // First, the start indicator, for cancelling it.
+    var start = document.getElementById('pathExtras');
+    start.innerHTML = windmill.templates.touchCompleteIndicator({
+      i: coords.i,
+      j: coords.j,
+      cancel: true
+    });
+    start.addEventListener('touchend', goog.bind(function(e) {
+      this.finishSnake();
+    }, this));
+
+    // The touch cycle:
+    // Move the mouse on touch and move, possibly finish on lift.
+    var grid = document.getElementById('gridAll');
+    this.snakeHandler.listen(grid, 'touchstart', function(ce) {
       var e = ce.getBrowserEvent();
       var touch = e.touches[0];
-      if (firstDown && (!lastTouch || touch.pageY > lastTouch.pageY)) {
-        // We don't currently have state to determine direction.
-        ce.preventDefault();
-        if (lastTouch) {
-          firstDown = false;
-        }
-      }
-      lastTouch = touch;
-      var yDistance = !touch.radiusX ?
-          Math.max(touch.radiusX, touch.radiusY)*2 : 175;
-      lastYDistance = yDistance;
-      this.snake.setMouse(touch.pageX, touch.pageY - yDistance);
+      this.snake.setMouse(touch.pageX, touch.pageY);
+      ignoreNextClick = true;
+      e.preventDefault();
     });
-    this.snakeHandler.listen(document, 'touchend', function(ce) {
-      if (lastYDistance) {
-        var head = this.snake.getHead();
-        var extras = document.getElementById('pathExtras');
-        extras.innerHTML = windmill.templates.touchIndicator({
-          x: head.x, y: head.y + lastYDistance
-        });
-        extras.style.setProperty('display', 'block');
-        // Don't bother using snakeHandler.
-        // This indicator will go away when the element does.
-        extras.lastChild.addEventListener('touchstart', function(e) {
-          firstDown = true;
-          ignoreNextClick = true;
-          extras.style.setProperty('display', 'none');
-        });
+    this.snakeHandler.listen(grid, 'touchmove', function(ce) {
+      var e = ce.getBrowserEvent();
+      var touch = e.touches[0];
+      this.snake.setMouse(touch.pageX, touch.pageY);
+    });
+    this.snakeHandler.listen(grid, 'touchend', function(ce) {
+      if (this.snake.atEnd()) {
+        this.finishSnake();
       }
     });
   } else {
@@ -526,6 +525,15 @@ GridUi.prototype.updateSnake = function() {
   }
   this.snake.moveTowardsMouse(75 /* msPerGridUnit */, this.navigationSelector);
   this.snake.render();
+  // TODO: Infer touch interface a different way.
+  if (this.snake.snapToGrid) {
+    var start = document.getElementById('pathExtras');
+    if (this.snake.atEnd()) {
+      start.style.setProperty('display', 'none');
+    } else {
+      start.style.setProperty('display', 'block');
+    }
+  }
   // TODO: Ideally avoid timeout here.
   // Is there some way to RAF and ensure it's in a different frame?
   setTimeout(goog.bind(function() {
@@ -552,9 +560,11 @@ GridUi.prototype.finishSnake = function() {
       exitLock.call(document);
     }
   }
-  if (document.getElementById('pathExtras').firstChild) {
-    document.getElementById('pathExtras').innerHTML = '';
-  }
+  goog.array.forEach(['pathExtras'], function(id) {
+    if (document.getElementById(id).firstChild) {
+      document.getElementById(id).innerHTML = '';
+    }
+  });
   // Now handle: Cancellation, success, failure
   // Note that in lieu of other state, 'snake hanging around after success'
   // currently is represented by no snake handler, but existing snake.

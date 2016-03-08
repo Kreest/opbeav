@@ -241,16 +241,24 @@ ul.flatList > li+li {
   color: #DDF;
 }
 /* https://stackoverflow.com/questions/4910963/how-to-create-a-pulse-effect-using-webkit-animation-outward-rings */
+.touchContainer {
+  height: 64px;
+  width: 64px;
+  line-height: 64px;
+  font-size: 48px;
+  position: absolute;
+  z-index: 20;
+}
 .touchIndicator {
-    border: 5px solid #FFF;
-    border-radius: 100px;
-    /* https://mobiforge.com/design-development/designing-touch-thumb-and-finger-sized-design */
-    height: 100px;
-    width: 100px;
-    position: absolute;
-    animation: pulsate 1s ease-out;
-    animation-iteration-count: infinite; 
-    opacity: 1.0
+  border: 5px solid #FFF;
+  border-radius: 64px;
+  /* https://mobiforge.com/design-development/designing-touch-thumb-and-finger-sized-design */
+  height: 64px;
+  width: 64px;
+  position: absolute;
+  animation: pulsate 1s ease-out;
+  animation-iteration-count: infinite;
+  opacity: 1.0
 }
 .touchIndicator.isSecond {
   animation-delay: 0.5s;
@@ -266,8 +274,8 @@ ul.flatList > li+li {
 </head>
 <link rel="icon" href="/static/logo.ico">
 <!-- #C5C5AC; 7C819D; #EDC9AF; #708090 all nice -->
-<body ng-controller="AppCtrl" layout="column" flex style="background-color: #708090;">
-<md-content style="background-color: #708090;">
+<body ng-controller="AppCtrl" layout="column" flex>
+<md-content style="background-color: #708090; min-height: 100vh;">
   <md-toolbar ng-style="{'background-color': $root.wind?'#333':null}">
   <div class="md-toolbar-tools">
     <md-button ng-repeat="(id, obj) in left" title="{{obj.title}}" ng-click="handle(true, $event, id)">
