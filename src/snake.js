@@ -51,7 +51,8 @@ windmill.Snake = function(start, draw, opt_mouseCoords, opt_symmetry) {
   this.frameTime = new ElapsedTime();
   this.mouseHistoryX = [];
   this.mouseHistoryY = [];
-  this.targetingMouse = !!opt_mouseCoords;
+  this.targetingMouse = false;
+  this.snapToGrid = false;
 }
 var Snake = windmill.Snake;
 
@@ -60,8 +61,9 @@ var MAX_PROGRESS = Snake.MAX_PROGRESS_;
 
 Snake.snakeId_ = 0;
 // Note: For now, both target functions are internal. Using callback.
-Snake.prototype.setTargetingMouse = function(targetingMouse) {
+Snake.prototype.setTargetingMouse = function(targetingMouse, snapToGrid) {
   this.targetingMouse = targetingMouse;
+  this.snapToGrid = snapToGrid;
 }
 Snake.prototype.atEnd = function() {
   return this.targetIsEnd && this.progress === this.targetMaxProgress;
@@ -81,6 +83,16 @@ Snake.prototype.markSuccessful = function() {
 Snake.prototype.setMouse = function(mouseX, mouseY) {
   this.mouseX = mouseX;
   this.mouseY = mouseY;
+  if (this.snapToGrid) {
+    var mouseOnGrid = this.calcMouseOnGrid();
+    var distanceX = mouseOnGrid.x - Math.round(mouseOnGrid.x / UI.GRID_UNIT)*UI.GRID_UNIT;
+    var distanceY = mouseOnGrid.y - Math.round(mouseOnGrid.y / UI.GRID_UNIT)*UI.GRID_UNIT;
+    if (Math.abs(distanceX) < Math.abs(distanceY)) {
+      this.mouseX -= distanceX;
+    } else {
+      this.mouseY -= distanceY;
+    }
+  }
 }
 Snake.prototype.setMouseDiff = function(mouseX, mouseY) {
   this.mouseX += mouseX;
@@ -147,16 +159,16 @@ Snake.prototype.moveTowardsTarget = function(maxMovement, selector) {
   if (this.targetingMouse) {
     var mouseOnGrid = this.calcMouseOnGrid();
     var pointOnGrid = this.getHead();
-    dx = mouseOnGrid.x - pointOnGrid.x;
-    dy = mouseOnGrid.y - pointOnGrid.y;
-    var distanceX = mouseOnGrid.x - Math.round(mouseOnGrid.x / UI.GRID_UNIT)*UI.GRID_UNIT;
-    var distanceY = mouseOnGrid.y - Math.round(mouseOnGrid.y / UI.GRID_UNIT)*UI.GRID_UNIT;
-    var threshhold = UI.GRID_LINE*2;
-    if (Math.abs(distanceX) <= threshhold && dy >= UI.GRID_UNIT) {
-      mouseOnGrid.x -= distanceX;
-    }
-    if (Math.abs(distanceY) <= threshhold && dx >= UI.GRID_UNIT) {
-      mouseOnGrid.y -= distanceY;
+    if (!this.snapToGrid) {
+      var distanceX = mouseOnGrid.x - Math.round(mouseOnGrid.x / UI.GRID_UNIT)*UI.GRID_UNIT;
+      var distanceY = mouseOnGrid.y - Math.round(mouseOnGrid.y / UI.GRID_UNIT)*UI.GRID_UNIT;
+      var threshhold = UI.GRID_LINE*2;
+      if (Math.abs(distanceX) <= threshhold && dy >= UI.GRID_UNIT) {
+        mouseOnGrid.x -= distanceX;
+      }
+      if (Math.abs(distanceY) <= threshhold && dx >= UI.GRID_UNIT) {
+        mouseOnGrid.y -= distanceY;
+      }
     }
     dx = mouseOnGrid.x - pointOnGrid.x;
     dy = mouseOnGrid.y - pointOnGrid.y;

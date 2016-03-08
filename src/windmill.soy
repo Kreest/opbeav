@@ -685,9 +685,33 @@
 {template .touchIndicator}
   {@param x: int}
   {@param y: int}
-{let $position kind="attributes"}style="top: {round($y-50)}px; left: {round($x-50)}px; z-index: 20;"{/let}
-<div class="touchIndicator isSecond"{sp}{$position}></div>
-<div class="touchIndicator"{sp}{$position}></div>
+<div class="touchContainer"
+     style="top: {round($y-32)}px; left: {round($x-32)}px;">
+  <div class="touchIndicator isSecond"></div>
+  <div class="touchIndicator"></div>
+</div>
+{/template}
+
+
+/** A touch indicator for completing a snake. */
+{template .touchCompleteIndicator}
+  {@param i: int}
+  {@param j: int}
+  {@param cancel: bool}
+<div class="touchContainer material-icons"
+     style="left: {UI.GRID_UNIT*$i-32}px;
+            top: {UI.GRID_UNIT*$j-32}px;
+            line-height: 64px;
+            text-align: center;
+            color:
+            {if $cancel}
+              rgba(100,0,0,0.5)
+            {else}
+              rgba(0,200,0,0.5)
+            {/if}
+            ">
+  {if $cancel}close{else}check{/if}
+</div>
 {/template}
 
 
@@ -695,6 +719,15 @@
 {template .startHtml}
   {@param x: int}
   {@param y: int}
+// Larger touch-only target (100px wide)
+{call .overlayHtml data="all"}
+  {param attributes kind="attributes"}
+    style="left: {$x-50}px; top: {$y-50}px; width: 0; height: 0;
+           border-radius: 50px; border: 50px solid transparent; cursor: auto;"
+    data-touch="1"
+  {/param}
+{/call}
+// Regular-sized target, mainly for mouse.
 {call .overlayHtml data="all"}
   {param attributes kind="attributes"}
     style="left: {$x-UI.START_R}px; top: {$y-UI.START_R}px; width: 0; height: 0;
