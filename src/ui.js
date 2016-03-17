@@ -580,7 +580,16 @@ GridUi.prototype.finishSnake = function() {
     return;
   }
   // Success or failure at end
-  var errs = windmill.validate.getErrors(this.grid, this.snake.movement, this.snake.secondaryMovement);
+  try {
+    var errs = windmill.validate.getErrors(this.grid, this.snake.movement, this.snake.secondaryMovement);
+  } catch (e) {
+    console.log(e);
+    this.uiHook.fyi(
+        'Internal error validating this puzzle! Please file a bug (see FAQ)',
+        true);
+    this.disappearSnake(200, [], 0);
+    return;
+  }
   if (errs.messages.length) {
     var messages = [];
     goog.array.removeDuplicates(errs.messages, messages);

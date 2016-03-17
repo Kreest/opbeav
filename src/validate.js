@@ -498,7 +498,7 @@ windmill.validate.addNegativeToGrid_ =
         Shape.getGridFits(negativeGrid, tetris, negInfo, grid, reverseGridOffset));
   });
   return goog.array.filter(goog.array.map(coords, function(coord) {
-    var i = coord.i, j = coord.j, tetris = coord.tetris;
+    var i = coord.i, j = coord.j, tetris = coord.shape;
     // Need to update both negative grid (remove placed tetris) and regular grid
     // (add placed tetris not already in negative grid)
     var newGrid = grid;
