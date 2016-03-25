@@ -215,7 +215,6 @@ var PublishDialogCtrl = function(
     if (widgetId != undefined) {
       captcha = grecaptcha.getResponse(widgetId);
     }
-    captcha = 'banana hammer';
     if (!captcha) {
       $mdToast.showSimple('You need to fill out the CAPTCHA');
       return;
@@ -725,7 +724,7 @@ var PlayCtrl = function(
   $scope['solves'] = null
   $handlers.addHandler(
       true, 'edit', 'Edit',
-      'Go to a page to edit this puzzle',
+      'Open the editor with the contents of this puzzle',
       function() {
     var state = $grid.getHash();
     $state.go('build.data', {'data': state});
