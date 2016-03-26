@@ -215,7 +215,7 @@ Grid.prototype.getHash = function() {
 // TODO: Change this to use forEachEntity?
 // TODO: Also, why exactly can't we just pass the proto into Soy directly?
 Grid.prototype.getEntityRepr = function(
-    opt_value, opt_a, opt_b, opt_addEndable) {
+    opt_value, opt_a, opt_b, opt_addEndable, opt_maximumTetrisSize) {
   var coordsDefined = opt_a != undefined && opt_b != undefined;
   if (opt_value == undefined && !coordsDefined) {
     // This will mainly happen when there is no edit entity.
@@ -269,6 +269,7 @@ Grid.prototype.getEntityRepr = function(
       }
       rows.push(row);
     }
+    extras.maximumTetrisSize = opt_maximumTetrisSize || (shape.width > height ? shape.width : height);
     extras.shape = {
       width: shape.width,
       height: height,
@@ -282,10 +283,20 @@ Grid.prototype.getEntityRepr = function(
   return content;
 }
 Grid.prototype.getEntityReprs = function(opt_addEndable) {
+  var maximumTetrisSize = 0;
+  for (var i = 0; i < this.storeWidth * this.storeHeight; i++) {
+    var value = this.entities[i];
+    if (value.type == Type.TETRIS) {
+      var height = Math.floor(value.shape.grid.length / value.shape.width);
+      var size = value.shape.width > height ? value.shape.width : height;
+      if (size > maximumTetrisSize)
+          maximumTetrisSize = size;
+    }
+  }
   var contents = [];
   for (var a = 0; a < this.storeWidth; a++) {
     for (var b = 0; b < this.storeHeight; b++) {
-      var entity = this.getEntityRepr(undefined, a, b, opt_addEndable);
+      var entity = this.getEntityRepr(undefined, a, b, opt_addEndable, maximumTetrisSize);
       if (entity) {
         contents.push(entity);
       }
