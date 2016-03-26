@@ -241,6 +241,9 @@ GridUi.prototype.dispose = function() {
   // object again', but let's be generous/safe.
   this.eventHandler = this.snakeHandler = null;
 }
+GridUi.prototype.eraseAll = function() {
+  this.grid.initialize(this.grid.width, this.grid.height);
+}
 GridUi.prototype.clearEditEntity = function() {
   this.editEntity = null;
   this.render();
@@ -250,7 +253,7 @@ GridUi.prototype.setEditEntity = function(data) {
   // TODO: Should move setting width/height/symmetry to a different method?
   this.editEntity = null;
   if (data.width != this.grid.width || data.height != this.grid.height) {
-    this.grid.initialize(data.width, data.height);
+    this.grid.setSize(data.width, data.height);
   }
   if (data.symmetry != this.grid.symmetry) {
     this.grid.setSymmetry(data.symmetry);

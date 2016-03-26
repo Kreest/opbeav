@@ -306,6 +306,27 @@ Grid.prototype.setSymmetry = function(symmetry) {
   this.symmetry = symmetry;
   this.sanitize();
 }
+Grid.prototype.setSize = function(width, height) {
+  var lastStoreWidth = this.storeWidth;
+  var lastStoreHeight = this.storeHeight;
+  var lastEntities = this.entities;
+
+  this.width = width;
+  this.height = height;
+  this.storeWidth = this.width*2 + 1;
+  this.storeHeight = this.height*2 + 1;
+  this.entities = [];
+
+  for (var b = 0; b < this.storeHeight; b++) {
+    for (var a = 0; a < this.storeWidth; a++) {
+      if (a < lastStoreWidth && b < lastStoreHeight) {
+        this.entities[a + this.storeWidth*b] = lastEntities[a + lastStoreWidth*b];
+      } else {
+        this.entities[a + this.storeWidth*b] = new Entity();
+      }
+    }
+  }
+}
 Grid.prototype.sanitize = function() {
   var sym = this.getSymmetry();
   if (!sym) {

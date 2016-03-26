@@ -395,6 +395,9 @@ var EditorCtrl = function(
       $scope['neg'] = n == 'negative';
     }
   }
+  $scope.eraseAll = function () {
+    $grid.eraseAll();
+  }
   $scope.getSelectClass = function(n) {
     return n == $scope['obj'] ? 'isSelected' : null;
   }
@@ -1060,6 +1063,9 @@ GridService.prototype.newGridUi_ = function(data) {
   uiHook.showToast = goog.bind(this.mdToast.showSimple, this.mdToast);
   var gui = new windmill.GridUi(grid, uiHook);
   return gui;
+}
+GridService.prototype.eraseAll = function() {
+  this.currentGrid().eraseAll();
 }
 // Now, all of the convenient grid access functions.
 // They all throw if there's no grid.
