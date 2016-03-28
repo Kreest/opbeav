@@ -69,6 +69,7 @@
       {case Type.TETRIS}
         {call .tetrisSvg data="$coord"}
           {param shape: $extras.shape /}
+          {param maximumSize: $extras.maximumTetrisSize /}
         {/call}
       {case Type.ERROR}
         {call .errorSvg data="$coord" /}
@@ -209,10 +210,11 @@
 /** Tetris SVG */
 {template .tetrisSvg}
   {@param shape: [width: int, height: int, rows: list<list<bool>>, free: bool, negative: bool]}
+  {@param maximumSize: int}
 {let $width: UI.TETRIS*$shape.width + UI.TETRIS_SPACE*($shape.width-1) /}
 {let $height: UI.TETRIS*$shape.height + UI.TETRIS_SPACE*($shape.height-1) /}
 {let $allowedSpace: UI.TETRIS*3.5 * ($shape.free ? 0.7071 : 1) /}
-{let $maxDimension: $width > $height ? $width : $height /}
+{let $maxDimension: UI.TETRIS*$maximumSize + UI.TETRIS_SPACE*($maximumSize-1) /}
 {let $scaleFactor:
     ($maxDimension <= $allowedSpace ? 1 : $allowedSpace/$maxDimension) /}
 {let $neg: $shape.negative ? 2 : 0 /}
@@ -280,6 +282,7 @@
       'free': false,
       'negative': false
     ] /}
+    {param maximumSize: 2 /}
   {/call}
 </g>
 </svg>
@@ -319,6 +322,7 @@
       'free': false,
       'negative': false
     ] /}
+    {param maximumSize: 2 /}
   {/call}
 </g>
 <g id="negative" transform="{$zoom15}">
@@ -330,6 +334,7 @@
       'free': false,
       'negative': true
     ] /}
+    {param maximumSize: 2 /}
   {/call}
 </g>
 <g id="error" transform="{$zoom15}">
