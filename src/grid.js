@@ -289,8 +289,9 @@ Grid.prototype.getEntityReprs = function(opt_addEndable) {
     if (value.type == Type.TETRIS) {
       var height = Math.floor(value.shape.grid.length / value.shape.width);
       var size = value.shape.width > height ? value.shape.width : height;
-      if (size > maximumTetrisSize)
-          maximumTetrisSize = size;
+      if (size > maximumTetrisSize) {
+        maximumTetrisSize = size;
+      }
     }
   }
   var contents = [];
