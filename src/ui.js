@@ -243,6 +243,7 @@ GridUi.prototype.dispose = function() {
 }
 GridUi.prototype.eraseAll = function() {
   this.grid.initialize(this.grid.width, this.grid.height);
+  this.render();
 }
 GridUi.prototype.clearEditEntity = function() {
   this.editEntity = null;

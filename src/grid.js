@@ -74,7 +74,6 @@ Grid.prototype.initialize = function(width, height, opt_data) {
   if (storage) {
     this.entities = storage.entity;
     this.symmetry = storage.symmetry || SymmetryType.NONE;
-    this.sanitize();
   } else {
     this.entities = [];
     for (var i = 0; i < this.storeWidth * this.storeHeight; i++) {
@@ -87,6 +86,7 @@ Grid.prototype.initialize = function(width, height, opt_data) {
     this.pointEntity(this.width, 0, new Entity(
           Type.END, undefined, new Orientation(1, 0)));
   }
+  this.sanitize();
   return true;
 }
 
@@ -286,7 +286,7 @@ Grid.prototype.getEntityReprs = function(opt_addEndable) {
   var maximumTetrisSize = 0;
   for (var i = 0; i < this.storeWidth * this.storeHeight; i++) {
     var value = this.entities[i];
-    if (value.type == Type.TETRIS) {
+    if (value.type == Type.TETRIS && value.shape && value.shape.grid) {
       var height = Math.floor(value.shape.grid.length / value.shape.width);
       var size = value.shape.width > height ? value.shape.width : height;
       if (size > maximumTetrisSize) {
@@ -338,6 +338,7 @@ Grid.prototype.setSize = function(width, height) {
       }
     }
   }
+  this.sanitize();
 }
 Grid.prototype.sanitize = function() {
   var sym = this.getSymmetry();

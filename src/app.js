@@ -396,6 +396,7 @@ var EditorCtrl = function(
     }
   }
   $scope.eraseAll = function () {
+    $scope['symmetry'] = 1;
     $grid.eraseAll();
   }
   $scope.getSelectClass = function(n) {
