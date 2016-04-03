@@ -337,9 +337,16 @@ windmill.validate.validateTetris_ = function(
   }
 }
 
-
-var states = 100;
 windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
+  var search = windmill.validate.attemptTetrisSearch_(
+      tetrisState, attempt, result);
+  if (typeof search == 'string' && tetrisState.logging) {
+    tetrisState.printSearch(search);
+  }
+  return !!search;
+}
+windmill.validate.attemptTetrisSearch_ =
+    function(tetrisState, attempt, result) {
   if (attempt.positiveCount == attempt.negativeCount) {
     result.countCancelled = true;
     return true;
@@ -363,6 +370,8 @@ windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
       return false;
     }
     // It really does need to be BFS (an actual queue) for demonic cases.
+    // TODO: This works very poorly when branching factor is very high,
+    // for instance with dozens of unimos. Can we use more depth there?
     var node = queue.shift();
     // Success??
     // First: No more grid (only gets 0 width and height if empty).
@@ -376,7 +385,7 @@ windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
         // compensated for.
         !node.negativeGrid) {
       // It's a Christmas miracle!
-      return true;
+      return node.key;
     }
     if (node.key in tetrisState.gridProgressTransitions) {
       continue;
@@ -418,7 +427,6 @@ windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
         goog.array.forEach(newStates, function(newState) {
           var newGrid = newState.grid;
           var newNegativeGrid = newState.negativeGrid;
-          var stateId = states++;
           //console.log(`Result -------- ${remainingNegative.length} remaining, id${stateId}`); Shape.print(newGrid);
           //console.log(`Result negative --------`); Shape.print(newNegativeGrid);
 
@@ -426,13 +434,12 @@ windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
           if (newNegativeGrid) {
             state.negativeGrid = newNegativeGrid;
           }
-          tetrisState.registerGridProgressKey(state);
+          var key = tetrisState.registerGridProgressKey(state);
           // Actually, we do even need to calculate the key?
           // See note below on gridProgressTransitions mutation.
           //console.log(`${node.key} -> ${state.key}`);
-          //transitions.push(key);
+          transitions.push(key);
           queue.push(state);
-          state.stateId = stateId;
         });
       });
     } else if (node.remaining) {
@@ -450,7 +457,6 @@ windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
         var remaining = unique.removeFn(tetris);
         goog.array.forEach(newStates, function(newState) {
           var newGrid = newState.grid;
-          var stateId = states++;
           //console.log(`Result -------- ${remaining.length} remaining, id${stateId}`); Shape.print(newGrid);
           var state = {grid: newGrid, remaining: remaining, negative: node.negative};
           if (newState.negativeGrid) {
@@ -459,13 +465,12 @@ windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
           var key = tetrisState.registerGridProgressKey(state);
           transitions.push(key);
           queue.push(state);
-          state.stateId = stateId;
         });
       });
     }
     // TODO: The value in this map isn't really used for anything.
     // A boolean would probably be fine.
-    tetrisState.gridProgressTransitions[node.key] = transitions;
+    tetrisState.registerGridProgressTransition(node.key, transitions);
   }
   return false;
 }
@@ -592,7 +597,7 @@ windmill.validate.removeTetrisFromGrid_ = function(
     Shape.setOnGrid(newGrid, coord, false);
 
     // Do some simplifications if we're subtracting normally.
-    newGrid = Shape.reduce(newGrid, negativeGrid ? [negativeGrid] : undefined);
+    newGrid = Shape.reduce(newGrid, negativeGrid ? [negativeGrid.offset] : undefined);
     // Don't unnecessarily split up connected components to limit search space.
     // Except if the grid or tetris is split up, or there are negatives in our future.
     Shape.setMultiple(newGrid);
@@ -615,6 +620,8 @@ var TetrisState = function(vals, grid) {
   // State is: list of remaining shapes (including their orientations)
   this.gridProgressByKey = {};
   this.gridProgressTransitions = {};
+  this.reverseGridProgressTransitions = {};
+  this.statesById = {};
   this.grid = grid;
   Shape.setMultiple(grid);
   // All shape information.
@@ -624,6 +631,9 @@ var TetrisState = function(vals, grid) {
   this.positiveCount = 0;
   this.negativeCount = 0;
   this.shapeLocations = {};
+  this.stateId = 100;
+  // To debug polyominos: log when !COMPILED.
+  this.logging = false;
 
   goog.array.forEach(vals, function(val) {
     var shape = val.cell.shape;
@@ -664,13 +674,54 @@ var TetrisState = function(vals, grid) {
 TetrisState.prototype.timedOut = function() {
   return new Date() - this.startTime > 4*1000;
 }
+TetrisState.prototype.printSearch = function(end) {
+  var key = end;
+  var i = 100;
+  var remainingShapes = function(shapes) {
+    return goog.array.map(shapes, function(remain) {
+      var height = remain.grid.length / remain.width;
+      return remain.width + 'x' + remain.height + ' ' +
+          goog.array.map(remain.grid, function(r) { return 0 + r; });
+    }).join(', ');
+  }
+  while (key && i-- > 0) {
+    var state = this.gridProgressByKey[key];
+    console.log('State ' + state.stateId + ' ==============');
+    console.log('----- Grid');
+    Shape.print(state.grid);
+    console.log('Remaining: ' + remainingShapes(state.remaining));
+    console.log('----- Negative grid');
+    if (state.negativeGrid) {
+      Shape.print(state.negativeGrid);
+    }
+    if (state.negative.length) {
+      console.log('Remaining: ' + remainingShapes(state.negative));
+    }
+    key = this.reverseGridProgressTransitions[key];
+  }
+}
+TetrisState.prototype.registerGridProgressTransition =
+    function(from, tos) {
+  this.gridProgressTransitions[from] = tos;
+  if (!this.logging) {
+    return;
+  }
+  goog.array.forEach(tos, function(to) {
+    this.reverseGridProgressTransitions[to] = from;
+  }, this);
+}
 TetrisState.prototype.registerGridProgressKey = function(state) {
   var key = multiShapeKey(
       state.grid, state.remaining, state.negative, state.negativeGrid);
   state.key = key;
+  if (this.logging) {
+    state.stateId = this.stateId++;
+    this.statesById[state.stateId] = key;
+  }
   if (!(key in this.gridProgressByKey)) {
     this.gridProgressByKey[key] = state;
   }
+  return key;
 }
 TetrisState.prototype.rotateClockwise = function(grid, width) {
   // Static utility function, could move to shape.js
