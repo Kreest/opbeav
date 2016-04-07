@@ -170,7 +170,7 @@ Grid.prototype.drawTypeEntity = function(coord, drawType, opt_val) {
 Grid.prototype.getHash = function() {
   var isEmpty = function(e) {
     return (!e.type || e.type == Type.BASIC) &&
-        !e.color && !e.shape && !e.orientation;
+        !e.color && !e.shape;
   }
   // Run length encode empty entities.
   // wow. such imperative. much state invariants.
@@ -232,9 +232,10 @@ Grid.prototype.getEntityRepr = function(
     content.drawType = this.getDrawType(opt_a, opt_b);
   }
   var extras = {};
-  if (value.orientation && type == Type.END) {
-    extras.horizontal = value.orientation.horizontal;
-    extras.vertical = value.orientation.vertical;
+  if (type == Type.END && coordsDefined) {
+    var orientation = this.getEndPlacement(content.i, content.j);
+    extras.horizontal = orientation.horizontal;
+    extras.vertical = orientation.vertical;
     if (Math.abs(extras.horizontal) + Math.abs(extras.vertical) != 1) {
       // Should we try to infer one?
       return null;
@@ -353,10 +354,6 @@ Grid.prototype.sanitize = function() {
       if (i == ref.i && j == ref.j) {
         this.pointEntity(i, j, new Entity());
       } else if (value.type != refValue.type) {
-        if (value.type == Type.END) {
-          value = new Entity(value);
-          value.orientation = this.getEndPlacement(ref.i, ref.j);
-        }
         this.pointEntity(ref.i, ref.j, value);
       }
     }
