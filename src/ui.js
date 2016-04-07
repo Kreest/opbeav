@@ -335,15 +335,7 @@ GridUi.prototype.attemptInsert = function(coord, drawType, el) {
   }, this);
   if (el.getAttribute('data-op') == '1') {
     var insert = goog.bind(function(coord, drawType) {
-      var entity = new Entity(this.editEntity);
-      if (entity.type == Type.END) {
-        var orient = this.grid.getEndPlacement(coord.i, coord.j);
-        if (!orient) {
-          return;
-        }
-        entity.orientation = orient;
-      }
-      this.grid.drawTypeEntity(coord, drawType, entity);
+      this.grid.drawTypeEntity(coord, drawType, new Entity(this.editEntity));
     }, this);
     // Regular insertion
     var other = otherCoord(this.editEntity);
@@ -708,7 +700,7 @@ GridUi.NavigationSelector.prototype.pointIsReachable = function(
   }
   // If point is not there, we can go to the end.
   if (thisEntity.type == Type.END) {
-    var o = thisEntity.orientation;
+    var o = grid.getEndPlacement(current.i, current.j);
     if (o.horizontal == di && o.vertical == dj) {
       return 'end';
     }
