@@ -211,6 +211,9 @@ Shape.getGridFits = function(
       // Note that if missingCount > 0, missingIndices is now its own shape.
       // Albeit a sparse one.
       if (missingCount > 0) {
+        for (var i = 0; i < shape.width * shape.height; i++) {
+          missingIndices[i] = !!missingIndices[i];
+        }
         answer.negativeShape = {
           grid: missingIndices,
           width: shape.width,

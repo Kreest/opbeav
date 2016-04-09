@@ -340,7 +340,8 @@ windmill.validate.validateTetris_ = function(
 windmill.validate.attemptTetris_ = function(tetrisState, attempt, result) {
   var search = windmill.validate.attemptTetrisSearch_(
       tetrisState, attempt, result);
-  if (typeof search == 'string' && tetrisState.logging) {
+  if (typeof search == 'string' && tetrisState.logLevel) {
+    window['_ts'] = tetrisState;
     tetrisState.printSearch(search);
   }
   return !!search;
@@ -462,6 +463,7 @@ windmill.validate.attemptTetrisSearch_ =
           if (newState.negativeGrid) {
             state.negativeGrid = newState.negativeGrid;
           }
+          state.index = newState.index;
           var key = tetrisState.registerGridProgressKey(state);
           transitions.push(key);
           queue.push(state);
@@ -531,6 +533,14 @@ windmill.validate.addNegativeToGrid_ =
       var negativeGridToGridTransform = Shape.newIndexTransformer(
           grid, -negativeGrid.offset.i, -negativeGrid.offset.j,
           negativeGrid.width);
+      // Clone the shape if necessary.
+      if (grid == newGrid) {
+        newGrid = {
+          grid: goog.array.clone(grid.grid),
+          width: grid.width,
+          height: grid.height
+        };
+      }
       Shape.setOnGrid(newGrid, coord, true, negativeGridToGridTransform);
       newGrid = Shape.reduce(newGrid, [newNegativeGrid.offset]);
       Shape.setMultiple(newGrid);
@@ -553,7 +563,7 @@ windmill.validate.removeTetrisFromGrid_ = function(
   goog.array.forEach(tetrises, function(tetris) {
     goog.array.extend(coords, Shape.getGridFits(grid, tetris, negInfo));
   });
-  return goog.array.filter(goog.array.map(coords, function(coord) {
+  return goog.array.filter(goog.array.map(coords, function(coord, index) {
     // Actually fill in the grid with the shape.
     // If we need negatives to do this, fill in the real grid with the caveat
     // that the negative space must be first filled in to continue.
@@ -609,6 +619,7 @@ windmill.validate.removeTetrisFromGrid_ = function(
     if (negativeGrid) {
       answer.negativeGrid = negativeGrid;
     }
+    answer.index = index;
     return answer;
   }), goog.functions.identity);
 }
@@ -632,8 +643,8 @@ var TetrisState = function(vals, grid) {
   this.negativeCount = 0;
   this.shapeLocations = {};
   this.stateId = 100;
-  // To debug polyominos: log when !COMPILED.
-  this.logging = false;
+  // To debug polyominos: 0 for nothing, 1 for success, 2 for all.
+  this.logLevel = 0;
 
   goog.array.forEach(vals, function(val) {
     var shape = val.cell.shape;
@@ -672,7 +683,7 @@ var TetrisState = function(vals, grid) {
   this.startTime = new Date();
 }
 TetrisState.prototype.timedOut = function() {
-  return new Date() - this.startTime > 4*1000;
+  return !this.logLevel && new Date() - this.startTime > 4*1000;
 }
 TetrisState.prototype.printSearch = function(end) {
   var key = end;
@@ -686,7 +697,7 @@ TetrisState.prototype.printSearch = function(end) {
   }
   while (key && i-- > 0) {
     var state = this.gridProgressByKey[key];
-    console.log('State ' + state.stateId + ' ==============');
+    console.log('State ' + state.stateId + ' ============== ' + state.index);
     console.log('----- Grid');
     Shape.print(state.grid);
     console.log('Remaining: ' + remainingShapes(state.remaining));
@@ -703,7 +714,7 @@ TetrisState.prototype.printSearch = function(end) {
 TetrisState.prototype.registerGridProgressTransition =
     function(from, tos) {
   this.gridProgressTransitions[from] = tos;
-  if (!this.logging) {
+  if (!this.logLevel) {
     return;
   }
   goog.array.forEach(tos, function(to) {
@@ -714,7 +725,7 @@ TetrisState.prototype.registerGridProgressKey = function(state) {
   var key = multiShapeKey(
       state.grid, state.remaining, state.negative, state.negativeGrid);
   state.key = key;
-  if (this.logging) {
+  if (this.logLevel) {
     state.stateId = this.stateId++;
     this.statesById[state.stateId] = key;
   }
