@@ -141,7 +141,10 @@ Shape.newIndexTransformer = function(shape, i, j, viewWidth, opt_checkValid) {
   // Maybe just split this into 2 functions, to minimize branching.
   return function(index) {
     var viewJOffset = Math.floor(index / viewWidth);
-    if (opt_checkValid) {
+    // TODO: Find where this should be passed in and pass it in.
+    // Otherwise, allows http://i.imgur.com/NqDrkNw.png to happen in
+    // combination with other bug from fix commit.
+    if (opt_checkValid || true) {
       var viewI = (index % viewWidth) + i;
       if (viewI < 0 || viewI >= shape.width ||
           viewJOffset + j < 0 || viewJOffset + j >= shape.height) {
@@ -208,6 +211,9 @@ Shape.getGridFits = function(
       // Note that if missingCount > 0, missingIndices is now its own shape.
       // Albeit a sparse one.
       if (missingCount > 0) {
+        for (var i = 0; i < shape.width * shape.height; i++) {
+          missingIndices[i] = !!missingIndices[i];
+        }
         answer.negativeShape = {
           grid: missingIndices,
           width: shape.width,

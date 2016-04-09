@@ -19,16 +19,16 @@
           by <a href="/user/{{info.creator}}">{{info.name}}</a>
         <li ng-controller="RatingCtrl" ng-init="init(info)" style="padding-left: 8px;">
           <md-icon class="material-icon"
-                   style="cursor: pointer;"
+                   style="cursor: pointer; outline: none;"
                    ng-style="{'color': rinfo.voted==1?'yellow':'#EEE'}"
-                   ng-click="rate(1)">
+                   ng-click="rate(1); $event.stopPropagation()">
             thumb_up
           </md-icon>
           <span style="display: inline-block; min-width: 16px; text-align: center;">{{rinfo.localVotes + rinfo.voted}}</span>
           <md-icon class="material-icon"
-                   style="cursor: pointer;"
+                   style="cursor: pointer; outline: none;"
                    ng-style="{'color': rinfo.voted==-1?'#0087BD':'#EEE'}"
-                   ng-click="rate(-1)">
+                   ng-click="rate(-1); $event.stopPropagation()">
             thumb_down
           </md-icon>
         </li>

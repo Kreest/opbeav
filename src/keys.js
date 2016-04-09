@@ -29,7 +29,7 @@ windmill.keys.shapeKey = function(shape) {
   }
   var key = [
     shape.width,
-    goog.array.map(shape.grid, function(b) { return b ? '0' : '1' }).join('')
+    goog.array.map(shape.grid, function(b) { return b ? '1' : '0' }).join('')
   ].join(',');
   shape.key_ = key;
   return key;

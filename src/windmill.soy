@@ -348,7 +348,12 @@
   </g>
 {/for}
 <g id="start" transform="translate(50, 50) scale(1.5)" stroke="black" fill="black">
-  {call .startSvg data="$coords" /}
+  <g transform="translate(-6, 0)">
+    {call .startSvg data="$coords" /}
+  </g>
+  {call .gridLineSvg data="$coords"}
+    {param direction: DrawType.HLINE /}
+  {/call}
 </g>
 <g id="end" transform="translate(40, 50) scale(1.5)" stroke="black">
   <line x1="0"
