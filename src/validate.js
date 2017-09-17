@@ -834,7 +834,7 @@ var TetrisValidationAttempt = function(
 }
 var uniqueShapes = function(shapes) {
   var uniqueRemaining = [];
-  goog.array.removeDuplicates(shapes, uniqueRemaining, shapeKey);
+  goog.array.removeDuplicates(shapes, uniqueRemaining, fullShapeKey);
   return {
     uniqueShapes: uniqueRemaining,
     removeFn: function(shape) {
