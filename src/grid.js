@@ -22,7 +22,7 @@ windmill.Grid = function() {
   this.num = Grid.num_++;
   // Also need to set default width and height.
   // Do not render just yet.
-  this.initialize(5, 5);
+  this.initialize(4, 4);
 }
 var Grid = windmill.Grid;
 Grid.num_ = 0;
