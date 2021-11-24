@@ -616,6 +616,14 @@ GridUi.prototype.finishSnake = function() {
     this.snake.markSuccessful();
     setTimeout(goog.bind(function() {
       // Hacky way to avoid throwing.
+      // Simulate an HTTP redirect:
+      if (window.location.hash == "#CAsSAigKEgIIBBICKAMSBAgLMAMSAigZEgQICzADEgIoExIjCAkiHwgFEhkBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBGAESAigTEgQICzADEgIoBRIECAswAhICKAMSAggDEgIoHg==_0") {
+        window.location.href = "http://localhost:8000/main.html#CAsSAigEEgIIBBIAEgIIBBICKAUSAggKEgIIBhICKBESAggGEgIoBBICCAoSAigXEgIIChICKAQSAggGEgIoAxICCAYSAigOEgIIChICKAQSAggGEgIoEhICCAoSAigFEgIIAxIAEgIIAxICKAQYAg==_0";
+        location.reload();
+      } else if (window.location.hash == "#CAsSAigEEgIIBBIAEgIIBBICKAUSAggKEgIIBhICKBESAggGEgIoBBICCAoSAigXEgIIChICKAQSAggGEgIoAxICCAYSAigOEgIIChICKAQSAggGEgIoEhICCAoSAigFEgIIAxIAEgIIAxICKAQYAg==_0") {
+        window.location.href = "target url here";
+      }
+
       this.uiHook.onSuccess(this.solvedPuzzlePath);
     }, this));
     if (this.backgroundEditEntity) {

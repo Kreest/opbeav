@@ -1053,7 +1053,7 @@ GridService.prototype.currentGridData = function() {
   }
   return null;
 }
-GridService.prototype.newGridUi_ = function(data) {
+  GridService.prototype.newGridUi_ = function(data) {
   var grid = new windmill.Grid();
   if (data) {
     if (!grid.initialize(undefined, undefined, data)) {
