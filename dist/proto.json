@@ -1,0 +1,289 @@
+{
+    "package": "GridProto",
+    "messages": [
+        {
+            "name": "Entity",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "Type",
+                    "name": "type",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "Color",
+                    "name": "color",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "Orientation",
+                    "name": "orientation",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "Shape",
+                    "name": "shape",
+                    "id": 4
+                },
+                {
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "count",
+                    "id": 5
+                },
+                {
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "triangle_count",
+                    "id": 6
+                }
+            ]
+        },
+        {
+            "name": "Shape",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "width",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "bool",
+                    "name": "grid",
+                    "id": 2,
+                    "options": {
+                        "packed": true
+                    }
+                },
+                {
+                    "rule": "optional",
+                    "type": "bool",
+                    "name": "free",
+                    "id": 3
+                },
+                {
+                    "rule": "optional",
+                    "type": "bool",
+                    "name": "negative",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "Orientation",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "sint32",
+                    "name": "horizontal",
+                    "id": 1
+                },
+                {
+                    "rule": "optional",
+                    "type": "sint32",
+                    "name": "vertical",
+                    "id": 2
+                }
+            ]
+        },
+        {
+            "name": "Storage",
+            "fields": [
+                {
+                    "rule": "optional",
+                    "type": "int32",
+                    "name": "width",
+                    "id": 1
+                },
+                {
+                    "rule": "repeated",
+                    "type": "Entity",
+                    "name": "entity",
+                    "id": 2
+                },
+                {
+                    "rule": "optional",
+                    "type": "SymmetryType",
+                    "name": "symmetry",
+                    "id": 3
+                }
+            ]
+        }
+    ],
+    "enums": [
+        {
+            "name": "Type",
+            "values": [
+                {
+                    "name": "UNKNOWN",
+                    "id": 0
+                },
+                {
+                    "name": "NONE",
+                    "id": 1
+                },
+                {
+                    "name": "BASIC",
+                    "id": 2
+                },
+                {
+                    "name": "START",
+                    "id": 3
+                },
+                {
+                    "name": "END",
+                    "id": 4
+                },
+                {
+                    "name": "DISJOINT",
+                    "id": 5
+                },
+                {
+                    "name": "HEXAGON",
+                    "id": 6
+                },
+                {
+                    "name": "SQUARE",
+                    "id": 7
+                },
+                {
+                    "name": "STAR",
+                    "id": 8
+                },
+                {
+                    "name": "TETRIS",
+                    "id": 9
+                },
+                {
+                    "name": "ERROR",
+                    "id": 10
+                },
+                {
+                    "name": "TRIANGLE",
+                    "id": 11
+                }
+            ]
+        },
+        {
+            "name": "Color",
+            "values": [
+                {
+                    "name": "UNKNOWN",
+                    "id": 0
+                },
+                {
+                    "name": "BLACK",
+                    "id": 1
+                },
+                {
+                    "name": "WHITE",
+                    "id": 2
+                },
+                {
+                    "name": "CYAN",
+                    "id": 3
+                },
+                {
+                    "name": "MAGENTA",
+                    "id": 4
+                },
+                {
+                    "name": "YELLOW",
+                    "id": 5
+                },
+                {
+                    "name": "RED",
+                    "id": 6
+                },
+                {
+                    "name": "GREEN",
+                    "id": 7
+                },
+                {
+                    "name": "BLUE",
+                    "id": 8
+                },
+                {
+                    "name": "ORANGE",
+                    "id": 9
+                }
+            ]
+        },
+        {
+            "name": "SymmetryType",
+            "values": [
+                {
+                    "name": "UNKNOWN",
+                    "id": 0
+                },
+                {
+                    "name": "NONE",
+                    "id": 1
+                },
+                {
+                    "name": "HORIZONTAL",
+                    "id": 2
+                },
+                {
+                    "name": "VERTICAL",
+                    "id": 3
+                },
+                {
+                    "name": "ROTATIONAL",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "DrawType",
+            "values": [
+                {
+                    "name": "UNKNOWN",
+                    "id": 0
+                },
+                {
+                    "name": "CELL",
+                    "id": 1
+                },
+                {
+                    "name": "POINT",
+                    "id": 2
+                },
+                {
+                    "name": "HLINE",
+                    "id": 3
+                },
+                {
+                    "name": "VLINE",
+                    "id": 4
+                }
+            ]
+        },
+        {
+            "name": "SegmentType",
+            "values": [
+                {
+                    "name": "UNKNOWN",
+                    "id": 0
+                },
+                {
+                    "name": "START",
+                    "id": 1
+                },
+                {
+                    "name": "MIDDLE",
+                    "id": 2
+                },
+                {
+                    "name": "END",
+                    "id": 3
+                }
+            ]
+        }
+    ]
+}

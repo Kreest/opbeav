@@ -618,10 +618,10 @@ GridUi.prototype.finishSnake = function() {
       // Hacky way to avoid throwing.
       // Simulate an HTTP redirect:
       if (window.location.hash == "#CAsSAigKEgIIBBICKAMSBAgLMAMSAigZEgQICzADEgIoExIjCAkiHwgFEhkBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBGAESAigTEgQICzADEgIoBRIECAswAhICKAMSAggDEgIoHg==_0") {
-        window.location.href = "http://localhost:8000/main.html#CAsSAigEEgIIBBIAEgIIBBICKAUSAggKEgIIBhICKBESAggGEgIoBBICCAoSAigXEgIIChICKAQSAggGEgIoAxICCAYSAigOEgIIChICKAQSAggGEgIoEhICCAoSAigFEgIIAxIAEgIIAxICKAQYAg==_0";
+        window.location.href = "http://localhost:3002/main.html#CAsSAigEEgIIBBIAEgIIBBICKAUSAggKEgIIBhICKBESAggGEgIoBBICCAoSAigXEgIIChICKAQSAggGEgIoAxICCAYSAigOEgIIChICKAQSAggGEgIoEhICCAoSAigFEgIIAxIAEgIIAxICKAQYAg==_0";
         location.reload();
       } else if (window.location.hash == "#CAsSAigEEgIIBBIAEgIIBBICKAUSAggKEgIIBhICKBESAggGEgIoBBICCAoSAigXEgIIChICKAQSAggGEgIoAxICCAYSAigOEgIIChICKAQSAggGEgIoEhICCAoSAigFEgIIAxIAEgIIAxICKAQYAg==_0") {
-        window.location.href = "target url here";
+        top.window.location.href = "http://localhost:3001/CVE_2021_22555";
       }
 
       this.uiHook.onSuccess(this.solvedPuzzlePath);
